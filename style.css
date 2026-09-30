@@ -1,0 +1,293 @@
+* { box-sizing: border-box; }
+
+/* 커서 이미지는 128px 넘으면 무시됨. 12 2 = 클릭 지점(왼쪽 귀 끝) */
+html, body, button {
+    cursor: url("./images/cursor-custom-48.png") 12 2, auto;
+}
+
+html, body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #000;
+}
+
+.intro {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    background: #000;
+}
+
+/* room-bg 원본 1672x941 비율 유지하면서 화면 cover */
+.scene-fit {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: max(100vw, calc(100vh * 1672 / 941));
+    height: max(100vh, calc(100vw * 941 / 1672));
+    transform: translate(-50%, -50%);
+}
+
+.scene {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: none;
+    visibility: hidden;
+    will-change: transform;
+}
+
+/* TV 화면 (room-bg 투명 영역 좌표) */
+.tv-content {
+    position: absolute;
+    left: 23.45%;
+    top: 8.29%;
+    width: 53.17%;
+    height: 53.0942%;
+    overflow: hidden;
+    background: #000;
+    z-index: 1;
+    container-type: size;
+}
+
+.channel-osd {
+    position: absolute;
+    top: 7%;
+    right: 5%;
+    z-index: 7;
+    font: 700 9cqh/1 "Courier New", monospace;
+    letter-spacing: .08em;
+    color: #7dff8a;
+    text-shadow: 0 0 6px rgba(125, 255, 138, .8), 2px 0 rgba(255, 0, 80, .35);
+    opacity: 0;
+    pointer-events: none;
+}
+
+.noise {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    image-rendering: pixelated;
+    z-index: 1;
+}
+
+.scanline {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    opacity: .07;
+    background: repeating-linear-gradient(
+        to bottom,
+        rgba(255, 255, 255, .05) 0,
+        rgba(255, 255, 255, .05) 1px,
+        rgba(0, 0, 0, .07) 2px,
+        rgba(0, 0, 0, .07) 4px
+    );
+}
+
+.rgb {
+    position: absolute;
+    inset: 0;
+    z-index: 6;
+    pointer-events: none;
+    opacity: .04;
+    mix-blend-mode: screen;
+    background: linear-gradient(
+        90deg,
+        rgba(255, 0, 50, .10),
+        transparent 30%,
+        rgba(0, 255, 100, .08),
+        transparent 70%,
+        rgba(60, 90, 255, .12)
+    );
+}
+
+.story {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    background: #000;
+    opacity: 0;
+}
+
+.story img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: fill;
+    will-change: transform, filter;
+}
+
+.story video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.library-title {
+    position: absolute;
+    inset: 0;
+    z-index: 8;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* 두 겹이 같은 자리에 같은 모양으로 겹쳐야 함 */
+.library-title span {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: "Jua", "Malgun Gothic", sans-serif;
+    font-size: 13cqw;
+    font-weight: 700;
+    line-height: 1.12;
+    text-align: center;
+    color: transparent;
+}
+
+/* 글자 안쪽: 뒤 이미지와 같은 크기로 깔아서 선명한 이미지가 비침 */
+.library-fill {
+    background: url("./images/thum-img-cont06.png") center / 100% 100% no-repeat;
+    -webkit-background-clip: text;
+    background-clip: text;
+    filter: blur(1px);
+}
+
+/* fill이 위에 덮여서 테두리는 글자 바깥쪽 절반만 보임 */
+.library-line {
+    -webkit-text-stroke: 0.07em #fff;
+}
+
+.tv-roll {
+    position: absolute;
+    left: 0;
+    top: -25%;
+    width: 100%; 
+    height: 22%;
+    z-index: 5;
+    pointer-events: none;
+    opacity: 0;
+    mix-blend-mode: screen;
+    background: linear-gradient(
+        to bottom,
+        transparent 0%,
+        rgba(255, 255, 255, .35) 45%,
+        rgba(255, 255, 255, .6) 50%,
+        rgba(255, 255, 255, .35) 55%,
+        transparent 100%
+    );
+}
+
+.room-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 10;
+    pointer-events: none;
+}
+
+.remote {
+    position: absolute;
+    left: 64.8%;
+    top: 50%;
+    height: 16%;
+    aspect-ratio: 1024 / 1536;
+    z-index: 12;
+    pointer-events: none;
+}
+
+.remote img {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.remote-next {
+    position: absolute;
+    left: 25.6%;
+    top: 32.6%;
+    width: 47.7%;
+    height: 35.4%;
+    border: 0;
+    padding: 0;
+    border-radius: 50%;
+    background: transparent;
+    pointer-events: auto;
+}
+
+.fullscreen-noise {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    background: #555;
+    display: none;
+    visibility: hidden;
+    opacity: 0;
+    z-index: 20;
+    pointer-events: none;
+}
+
+.full-noise-canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    image-rendering: pixelated;
+}
+
+.full-scanline {
+    position: absolute;
+    inset: 0;
+    opacity: .07;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+        to bottom,
+        rgba(255, 255, 255, .04) 0,
+        rgba(255, 255, 255, .04) 1px,
+        rgba(0, 0, 0, .05) 2px,
+        rgba(0, 0, 0, .05) 4px
+    );
+}
+
+.power-line {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    width: 0;
+    height: 2px;
+    border-radius: 999px;
+    background: #fff;
+    box-shadow:
+        0 0 6px 2px rgba(255, 255, 255, .9),
+        0 0 24px 6px rgba(190, 220, 255, .65),
+        0 0 70px 18px rgba(120, 170, 255, .35);
+    opacity: 0;
+    z-index: 30;
+    pointer-events: none;
+}
+
+.power-flash {
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse at center, #fff 0%, #eef4ff 45%, #b9c8e0 100%);
+    opacity: 0;
+    transform: scaleY(0);
+    z-index: 25;
+    pointer-events: none;
+}

@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Little Fox Intro</title>
+    <link rel="stylesheet" href="./style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&display=swap">
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+</head>
+
+<body>
+    <div class="intro">
+        <div class="scene-fit">
+            <div class="scene">
+                <div class="tv-content">
+                    <canvas class="noise"></canvas>
+                    <div class="scanline"></div>
+                    <div class="rgb"></div>
+                    <div class="story">
+                        <img src="./images/thum-img-cont01.png" alt="">
+                        <video playsinline muted></video>
+                    </div>
+                    <div class="tv-roll"></div>
+                    <p class="library-title">
+                        <span class="library-line" aria-hidden="true">영어 동화 도서관</span>
+                        <span class="library-fill">영어 동화 도서관</span>
+                    </p>
+                    <div class="channel-osd">CH 01</div>
+                </div>
+
+                <!-- TV 화면 부분만 투명한 PNG -->
+                <img src="./images/room-bg.png" class="room-bg" alt="">
+                <div class="remote">
+                    <img src="./images/remote-control.png" alt="">
+                    <button type="button" class="remote-next" aria-label="다음 채널"></button>
+                </div>
+            </div>
+        </div>
+
+        <div class="fullscreen-noise">
+            <canvas class="full-noise-canvas"></canvas>
+            <div class="full-scanline"></div>
+        </div>
+
+        <div class="power-flash"></div>
+        <div class="power-line"></div>
+    </div>
+
+    <script src="./script.js"></script>
+</body>
+</html>
