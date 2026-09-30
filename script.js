@@ -4,6 +4,7 @@ const story = document.querySelector(".story");
 const storyImg = story.querySelector("img");
 const storyVideo = story.querySelector("video");
 const tvRoll = document.querySelector(".tv-roll");
+const scanline = document.querySelector(".scanline");
 const rgbTint = document.querySelector(".rgb");
 const powerLine = document.querySelector(".power-line");
 const powerFlash = document.querySelector(".power-flash");
@@ -54,6 +55,7 @@ let introDone = false;
 let switching = false;
 let onSection01 = false;
 let section01Tl = null;
+let logoBeforeSection = null;
 // 도서관 채널 단계: 0 이미지만, 1 큰 제목, 2 소개 문구, 3 로고와 CLASS 문구
 let libraryStep = 0;
 
@@ -165,7 +167,8 @@ function resetIntro() {
     gsap.set(storyImg, { x: 0, yPercent: 0, skewX: 0, scaleX: 1, scaleY: 1, opacity: 1, filter: "none" });
     gsap.set(tvRoll, { top: "-25%", opacity: 0 });
     gsap.set(rgbTint, { opacity: .04 });
-    gsap.set(noiseCanvas, { filter: "brightness(1)" });
+    gsap.set(noiseCanvas, { filter: "brightness(1)", opacity: 1 });
+    gsap.set(scanline, { opacity: .07 });
     gsap.killTweensOf(channelOsd);
     gsap.set(channelOsd, { opacity: 0 });
     resetLibraryText();
@@ -434,13 +437,34 @@ function tvFillPose() {
     };
 }
 
+// 지금 위치에서 TV 한가운데로. scale은 화면을 채운 뒤에도 로고가 크게 남도록
+function logoCenterPose() {
+    const tv = tvContent.getBoundingClientRect();
+    const logo = libraryLogo.getBoundingClientRect();
+    const dx = (tv.left + tv.width / 2) - (logo.left + logo.width / 2);
+    const dy = (tv.top + tv.height / 2) - (logo.top + logo.height / 2);
+
+    return {
+        x: gsap.getProperty(libraryLogo, "x") + dx,
+        y: gsap.getProperty(libraryLogo, "y") + dy,
+        scale: 2.6
+    };
+}
+
 function enterSection01() {
     onSection01 = true;
     switching = true;
     const pose = tvFillPose();
+    const logo = logoCenterPose();
+    logoBeforeSection = {
+        x: gsap.getProperty(libraryLogo, "x"),
+        y: gsap.getProperty(libraryLogo, "y"),
+        scale: gsap.getProperty(libraryLogo, "scale")
+    };
 
     gsap.set(section01, { visibility: "visible" });
     gsap.set(scene, { transformOrigin: pose.origin });
+    gsap.killTweensOf([libraryLogo, libraryClass, libraryDesc, story, noiseCanvas, scanline, rgbTint]);
 
     section01Tl = gsap.timeline({
         onComplete: () => { switching = false; }
@@ -448,6 +472,11 @@ function enterSection01() {
     section01Tl
         .to(scene, { scale: pose.scale, x: pose.x, y: pose.y, duration: 1.35, ease: "power3.inOut" })
         .to(roomBg, { opacity: 0, duration: 1.35, ease: "power2.inOut" }, "<")
+        // 화면 속 이미지와 문구는 걷히고, 로고만 가운데로
+        .to(story, { opacity: 0, duration: .55 }, "<")
+        .to([noiseCanvas, scanline, rgbTint, libraryClass], { opacity: 0, duration: .55 }, "<")
+        .to(libraryDesc, { "--dim": 0, duration: .55 }, "<")
+        .to(libraryLogo, { ...logo, force3D: false, duration: 1.35, ease: "power3.inOut" }, "<")
         .to(section01, { opacity: 1, duration: .4 }, "-=.2");
 }
 
@@ -464,7 +493,14 @@ function leaveSection01() {
     section01Tl
         .to(section01, { opacity: 0, duration: .25 })
         .to(scene, { scale: 1, x: 0, y: 0, duration: 1.15, ease: "power3.inOut" }, "<")
-        .to(roomBg, { opacity: 1, duration: 1.15, ease: "power2.inOut" }, "<");
+        .to(roomBg, { opacity: 1, duration: 1.15, ease: "power2.inOut" }, "<")
+        .to(story, { opacity: 1, duration: .7 }, "<")
+        .to(noiseCanvas, { opacity: 1, duration: .7 }, "<")
+        .to(scanline, { opacity: .07, duration: .7 }, "<")
+        .to(rgbTint, { opacity: .04, duration: .7 }, "<")
+        .to(libraryDesc, { "--dim": 1, duration: .7 }, "<")
+        .to(libraryClass, { opacity: 1, duration: .7 }, "<")
+        .to(libraryLogo, { ...logoBeforeSection, force3D: false, duration: 1.15, ease: "power3.inOut" }, "<");
 }
 
 function changeChannel(dir) {
