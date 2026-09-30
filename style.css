@@ -133,44 +133,91 @@ html, body {
     pointer-events: none;
 }
 
-.library-title {
+.library-desc {
     position: absolute;
-    inset: 0;
+    left: 0;
+    right: 0;
+    top: 50%;
     z-index: 8;
     margin: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
+    padding: 0 3%;
+    transform: translateY(-50%);
+    font-family: "Pretendard", "Malgun Gothic", sans-serif;
+    font-size: 5cqw;
+    font-weight: 600;
+    /* line-height: 1.6; */
+    text-align: center;
+    white-space: nowrap;
+    color: #fff;
+    text-shadow: 0 1px 6px rgba(0, 0, 0, .6);
     pointer-events: none;
 }
 
-/* 두 겹이 같은 자리에 같은 모양으로 겹쳐야 함 */
-.library-title span {
+.library-desc::before {
+    content: "";
     position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: "Jua", "Malgun Gothic", sans-serif;
-    font-size: 13cqw;
-    font-weight: 700;
-    line-height: 1.12;
+    left: 0;
+    right: 0;
+    top: -1.4em;
+    bottom: -1.4em;
+    z-index: -1;
+    background: linear-gradient(
+        to bottom,
+        transparent 0%,
+        rgba(0, 0, 0, .6) 28%,
+        rgba(0, 0, 0, .6) 72%,
+        transparent 100%
+    );
+    opacity: var(--dim, 0);
+}
+
+.library-copy {
+    opacity: 0;
+}
+
+.library-logo {
+    display: inline-block;
+    height: 1.6em;
+    width: auto;
+    vertical-align: middle;
+    padding-bottom: .3em;
+    opacity: 0;
+}
+
+.library-class {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    z-index: 8;
+    margin: 0;
+    padding: 0 4%;
+    transform: translateY(-50%);
+    font-family: "Pretendard", "Malgun Gothic", sans-serif;
+    font-size: 4cqw;
+    font-weight: 600;
     text-align: center;
-    color: transparent;
+    color: #fff;
+    text-shadow: 0 1px 6px rgba(0, 0, 0, .6);
+    opacity: 0;
+}
+.library-class-big {
+    font-size: 5cqw;
+    font-weight: 900;
 }
 
-/* 글자 안쪽: 뒤 이미지와 같은 크기로 깔아서 선명한 이미지가 비침 */
-.library-fill {
-    background: url("./images/thum-img-cont06.png") center / 100% 100% no-repeat;
-    -webkit-background-clip: text;
-    background-clip: text;
-    filter: blur(1px);
+/* 문장 속 빈칸. 작아지면 이 크기, 커지면 글자 높이가 화면 너비의 22% */
+.library-slot {
+    display: inline-block;
+    line-height: 0;
+    vertical-align: middle;
+    opacity: 0;
 }
 
-/* fill이 위에 덮여서 테두리는 글자 바깥쪽 절반만 보임 */
-.library-line {
-    -webkit-text-stroke: 0.07em #fff;
+.library-slot img {
+    display: block;
+    height: 3em;
+    width: auto;
 }
 
 .tv-roll {
@@ -230,6 +277,39 @@ html, body {
     border-radius: 50%;
     background: transparent;
     pointer-events: auto;
+}
+
+/* 원본은 짙은 회색 선이라 흰색으로 바꿔 어두운 화면에서도 보이게 */
+.wheel-hint {
+    position: fixed;
+    right: 2.5vw;
+    top: 50%;
+    width: clamp(36px, 3.6vw, 64px);
+    height: auto;
+    margin-top: calc(clamp(36px, 3.6vw, 64px) * -0.51);
+    z-index: 100;
+    filter: brightness(0) invert(1) drop-shadow(0 0 6px rgba(0, 0, 0, .6));
+    opacity: 0;
+    pointer-events: none;
+    animation: wheel-bob 1.4s ease-in-out infinite;
+}
+
+@keyframes wheel-bob {
+    0%, 100% { transform: translateY(-8px); }
+    50%      { transform: translateY(8px); }
+}
+
+/* 인트로 다음 칸. TV가 화면을 채운 뒤 이 위에서 풀화면으로 이어짐 */
+.section01 {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 40;
+    background: transparent;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
 }
 
 .fullscreen-noise {

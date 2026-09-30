@@ -9,8 +9,15 @@ const powerLine = document.querySelector(".power-line");
 const powerFlash = document.querySelector(".power-flash");
 const fullscreenNoise = document.querySelector(".fullscreen-noise");
 const channelOsd = document.querySelector(".channel-osd");
-const libraryTitle = document.querySelector(".library-title");
+const libraryDesc = document.querySelector(".library-desc");
+const libraryCopy = document.querySelectorAll(".library-copy");
+const libraryLogo = document.querySelector(".library-logo");
+const libraryClass = document.querySelector(".library-class");
+const librarySlot = document.querySelector(".library-slot");
+const roomBg = document.querySelector(".room-bg");
+const section01 = document.querySelector(".section01");
 const remote = document.querySelector(".remote");
+const wheelHint = document.querySelector(".wheel-hint");
 const remoteNext = document.querySelector(".remote-next");
 
 const noiseCanvas = document.querySelector(".noise");
@@ -45,7 +52,10 @@ let currentChannel = 0;
 let channelTl = null;
 let introDone = false;
 let switching = false;
-let titleShown = false;
+let onSection01 = false;
+let section01Tl = null;
+// 도서관 채널 단계: 0 이미지만, 1 큰 제목, 2 소개 문구, 3 로고와 CLASS 문구
+let libraryStep = 0;
 
 Promise.all(channelSources.map(src => new Promise(resolve => {
     const img = new Image();
@@ -132,7 +142,8 @@ function resetIntro() {
 
     introDone = false;
     switching = false;
-    titleShown = false;
+    onSection01 = false;
+    libraryStep = 0;
     currentChannel = 0;
     storyImg.src = channelSources[0];
     stopChannelVideo();
@@ -157,8 +168,15 @@ function resetIntro() {
     gsap.set(noiseCanvas, { filter: "brightness(1)" });
     gsap.killTweensOf(channelOsd);
     gsap.set(channelOsd, { opacity: 0 });
-    gsap.killTweensOf(libraryTitle);
-    gsap.set(libraryTitle, { opacity: 0, scale: 1 });
+    resetLibraryText();
+
+    if (section01Tl) {
+        section01Tl.kill();
+        section01Tl = null;
+    }
+    gsap.killTweensOf([scene, roomBg, section01]);
+    gsap.set(roomBg, { opacity: 1 });
+    gsap.set(section01, { opacity: 0, visibility: "hidden" });
 
     gsap.set(fullscreenNoise, {
         display: "none",
@@ -203,9 +221,18 @@ function resetIntro() {
     floatRemote();
 }
 
+function setRemoteVisible(visible) {
+    gsap.to(remote, { opacity: visible ? 1 : 0, duration: .4, overwrite: "auto" });
+    remoteNext.style.pointerEvents = visible ? "" : "none";
+    // 리모컨이 사라진 뒤에 휠 안내가 뜸
+    gsap.to(wheelHint, { opacity: visible ? 0 : .85, duration: .4, overwrite: "auto" });
+}
+
 function floatRemote() {
     gsap.killTweensOf(remote);
-    gsap.set(remote, { xPercent: -50, y: 0, rotation: -6 });
+    gsap.set(remote, { xPercent: -50, y: 0, rotation: -6, opacity: 1 });
+    gsap.set(wheelHint, { opacity: 0 });
+    remoteNext.style.pointerEvents = "";
     gsap.to(remote, {
         y: 16,
         rotation: 6,
@@ -281,27 +308,104 @@ function playChannelVideo(src) {
 
 const libraryChannel = "./images/thum-img-cont06.png";
 
+// 빈칸에 들어 있는 제목을 화면 가운데 큰 글자로 옮길 위치
+function titlePose() {
+    gsap.set(librarySlot, { x: 0, y: 0, scale: 1 });
+    const tv = tvContent.getBoundingClientRect();
+    const slot = librarySlot.getBoundingClientRect();
+    if (!slot.height) return { x: 0, y: 0, scale: 1 };
+
+    return {
+        x: (tv.left + tv.width / 2) - (slot.left + slot.width / 2),
+        y: (tv.top + tv.height / 2) - (slot.top + slot.height / 2),
+        scale: 4 / 3
+    };
+}
+
 function showLibraryTitle() {
-    titleShown = true;
+    libraryStep = 1;
+    const pose = titlePose();
     gsap.to(storyImg, { opacity: .55, filter: "blur(5px)", duration: .5 });
-    gsap.fromTo(libraryTitle,
-        { opacity: 0, scale: 1 },
+    // 3D 레이어로 올라가면 작은 크기로 그린 걸 늘려서 흐려지므로 2D 유지
+    gsap.fromTo(librarySlot,
+        { opacity: 0, force3D: false, ...pose },
         { opacity: 1, duration: 1, delay: .5, ease: "power1.out" }
     );
 }
 
 function fadeOutLibraryTitle() {
-    titleShown = false;
-    gsap.killTweensOf(libraryTitle);
+    libraryStep = 0;
+    gsap.killTweensOf(librarySlot);
     gsap.killTweensOf(storyImg);
-    gsap.to(libraryTitle, { opacity: 0, duration: .4 });
+    gsap.to(librarySlot, { opacity: 0, duration: .4 });
     gsap.to(storyImg, { opacity: 1, filter: "blur(0px)", duration: .4 });
 }
 
+// 빈칸에 있던 제목이 제자리로 줄어들고, 그다음 나머지 문구가 뜸
+function showLibraryDesc() {
+    libraryStep = 2;
+    gsap.killTweensOf([librarySlot, libraryCopy, libraryDesc, libraryLogo]);
+    gsap.timeline()
+        .to(librarySlot, { x: 0, y: 0, scale: 1, force3D: false, duration: .9, ease: "power3.inOut" })
+        .addLabel("placed")
+        .to(libraryDesc, { "--dim": 1, duration: .8, ease: "power1.out" }, "placed-=.2")
+        .to([libraryCopy, libraryLogo], { opacity: 1, duration: .8, ease: "power1.out" }, "placed+=.15");
+}
+
+function hideLibraryDesc() {
+    libraryStep = 1;
+    const pose = titlePose();
+    gsap.killTweensOf([librarySlot, libraryCopy, libraryDesc, libraryLogo]);
+    gsap.timeline()
+        .to([libraryCopy, libraryLogo], { opacity: 0, duration: .3 })
+        .to(libraryDesc, { "--dim": 0, duration: .3 }, "<")
+        .to(librarySlot, { ...pose, force3D: false, duration: .7, ease: "power3.inOut" });
+}
+
+// 문장 안에 있는 로고를 TV 위쪽 가운데로 옮길 위치
+function logoPose() {
+    gsap.set(libraryLogo, { x: 0, y: 0, scale: 1 });
+    const tv = tvContent.getBoundingClientRect();
+    const logo = libraryLogo.getBoundingClientRect();
+
+    return {
+        x: (tv.left + tv.width / 2) - (logo.left + logo.width / 2),
+        y: (tv.top + tv.height * 0.18) - (logo.top + logo.height / 2),
+        scale: 1.8
+    };
+}
+
+function showLibraryClass() {
+    libraryStep = 3;
+    const pose = logoPose();
+    gsap.killTweensOf([libraryLogo, libraryCopy, librarySlot, libraryClass]);
+    gsap.timeline()
+        .to(libraryLogo, { ...pose, force3D: false, duration: .8, ease: "power3.inOut" })
+        .to([libraryCopy, librarySlot], { opacity: 0, duration: .4 }, "<")
+        .to(libraryClass, { opacity: 1, duration: .7, ease: "power1.out" }, "-=.25");
+}
+
+function hideLibraryClass() {
+    libraryStep = 2;
+    gsap.killTweensOf([libraryLogo, libraryCopy, librarySlot, libraryClass]);
+    gsap.timeline()
+        .to(libraryClass, { opacity: 0, duration: .3 })
+        .to(libraryLogo, { x: 0, y: 0, scale: 1, force3D: false, duration: .7, ease: "power3.inOut" }, "<")
+        .to([libraryCopy, librarySlot], { opacity: 1, duration: .5 }, "<+=.15");
+}
+
+function resetLibraryText() {
+    gsap.killTweensOf([librarySlot, libraryCopy, libraryDesc, libraryLogo, libraryClass]);
+    gsap.set(librarySlot, { opacity: 0, scale: 1, x: 0, y: 0 });
+    gsap.set(libraryCopy, { opacity: 0 });
+    gsap.set(libraryLogo, { opacity: 0, x: 0, y: 0, scale: 1 });
+    gsap.set(libraryClass, { opacity: 0 });
+    gsap.set(libraryDesc, { "--dim": 0 });
+}
+
 function hideLibraryTitle() {
-    titleShown = false;
-    gsap.killTweensOf(libraryTitle);
-    gsap.set(libraryTitle, { opacity: 0, scale: 1 });
+    libraryStep = 0;
+    resetLibraryText();
     gsap.killTweensOf(storyImg);
     gsap.set(storyImg, { opacity: 1, filter: "brightness(1) contrast(1)" });
 }
@@ -315,21 +419,79 @@ function showChannelNumber(index) {
 
 // ---------- channel ----------
 
+// TV가 화면을 꽉 채우도록 키울 배율. 지금 방 화면(scale 1)에서 재야 함
+function tvFillPose() {
+    const tv = tvContent.getBoundingClientRect();
+    const sceneRect = scene.getBoundingClientRect();
+    const tvX = tv.left + tv.width / 2;
+    const tvY = tv.top + tv.height / 2;
+
+    return {
+        origin: `${tvX - sceneRect.left}px ${tvY - sceneRect.top}px`,
+        scale: Math.max(window.innerWidth / tv.width, window.innerHeight / tv.height),
+        x: window.innerWidth / 2 - tvX,
+        y: window.innerHeight / 2 - tvY
+    };
+}
+
+function enterSection01() {
+    onSection01 = true;
+    switching = true;
+    const pose = tvFillPose();
+
+    gsap.set(section01, { visibility: "visible" });
+    gsap.set(scene, { transformOrigin: pose.origin });
+
+    section01Tl = gsap.timeline({
+        onComplete: () => { switching = false; }
+    });
+    section01Tl
+        .to(scene, { scale: pose.scale, x: pose.x, y: pose.y, duration: 1.35, ease: "power3.inOut" })
+        .to(roomBg, { opacity: 0, duration: 1.35, ease: "power2.inOut" }, "<")
+        .to(section01, { opacity: 1, duration: .4 }, "-=.2");
+}
+
+function leaveSection01() {
+    onSection01 = false;
+    switching = true;
+
+    section01Tl = gsap.timeline({
+        onComplete: () => {
+            gsap.set(section01, { visibility: "hidden" });
+            switching = false;
+        }
+    });
+    section01Tl
+        .to(section01, { opacity: 0, duration: .25 })
+        .to(scene, { scale: 1, x: 0, y: 0, duration: 1.15, ease: "power3.inOut" }, "<")
+        .to(roomBg, { opacity: 1, duration: 1.15, ease: "power2.inOut" }, "<");
+}
+
 function changeChannel(dir) {
     if (!introDone || switching) return;
 
-    // 도서관 채널에선 채널을 넘기기 전에 제목부터 띄우고/내림
+    if (onSection01) {
+        if (dir < 0) leaveSection01();
+        return;
+    }
+
+    // CLASS 문구까지 본 뒤 한 번 더 내리면 section01 풀화면으로
+    if (channels[currentChannel] === libraryChannel && dir > 0 && libraryStep >= 3) {
+        enterSection01();
+        return;
+    }
+
+    // 도서관 채널에선 채널을 넘기기 전에 이미지 → 제목 → 소개 문구 순서로 한 단계씩
     if (channels[currentChannel] === libraryChannel) {
-        if (dir > 0 && !titleShown) {
+        const steps = dir > 0
+            ? [[showLibraryTitle, 1.5], [showLibraryDesc, 1.6], [showLibraryClass, 1.4]][libraryStep]
+            : [null, [fadeOutLibraryTitle, .6], [hideLibraryDesc, 1.1], [hideLibraryClass, 1.2]][libraryStep];
+
+        if (steps) {
+            const [run, rest] = steps;
             switching = true;
-            showLibraryTitle();
-            gsap.delayedCall(1.5, () => { switching = false; });
-            return;
-        }
-        if (dir < 0 && titleShown) {
-            switching = true;
-            fadeOutLibraryTitle();
-            gsap.delayedCall(.6, () => { switching = false; });
+            run();
+            gsap.delayedCall(rest, () => { switching = false; });
             return;
         }
     }
@@ -360,6 +522,9 @@ function changeChannel(dir) {
         .call(() => {
             storyImg.src = channels[currentChannel];
             showChannelNumber(currentChannel);
+            // 도서관 채널부터는 계속 리모컨 대신 휠 안내
+            const libraryIndex = channels.indexOf(libraryChannel);
+            setRemoteVisible(libraryIndex === -1 || currentChannel < libraryIndex);
         })
         .to({}, { duration: .12 })
         .set(storyImg, { scaleY: .015, scaleX: 1.04, opacity: 1 })
