@@ -234,7 +234,7 @@ function setRemoteVisible(visible) {
 function floatRemote() {
     gsap.killTweensOf(remote);
     gsap.set(remote, { xPercent: -50, y: 0, rotation: -6, opacity: 1 });
-    gsap.set(wheelHint, { opacity: 0 });
+    gsap.set(wheelHint, { opacity: 0, scale: 1 });
     remoteNext.style.pointerEvents = "";
     gsap.to(remote, {
         y: 16,
@@ -462,9 +462,12 @@ function enterSection01() {
         scale: gsap.getProperty(libraryLogo, "scale")
     };
 
+    const hintWidth = wheelHint.getBoundingClientRect().width / (gsap.getProperty(wheelHint, "scale") || 1);
+    const hintTarget = Math.min(64, Math.max(36, window.innerWidth * 0.036));
+
     gsap.set(section01, { visibility: "visible" });
     gsap.set(scene, { transformOrigin: pose.origin });
-    gsap.killTweensOf([libraryLogo, libraryClass, libraryDesc, story, noiseCanvas, scanline, rgbTint]);
+    gsap.killTweensOf([libraryLogo, libraryClass, libraryDesc, story, noiseCanvas, scanline, rgbTint, wheelHint]);
 
     section01Tl = gsap.timeline({
         onComplete: () => { switching = false; }
@@ -477,6 +480,7 @@ function enterSection01() {
         .to([noiseCanvas, scanline, rgbTint, libraryClass], { opacity: 0, duration: .55 }, "<")
         .to(libraryDesc, { "--dim": 0, duration: .55 }, "<")
         .to(libraryLogo, { ...logo, force3D: false, duration: 1.35, ease: "power3.inOut" }, "<")
+        .to(wheelHint, { scale: hintTarget / (hintWidth * pose.scale), force3D: false, duration: 1.35, ease: "power3.inOut" }, "<")
         .to(section01, { opacity: 1, duration: .4 }, "-=.2");
 }
 
@@ -500,7 +504,8 @@ function leaveSection01() {
         .to(rgbTint, { opacity: .04, duration: .7 }, "<")
         .to(libraryDesc, { "--dim": 1, duration: .7 }, "<")
         .to(libraryClass, { opacity: 1, duration: .7 }, "<")
-        .to(libraryLogo, { ...logoBeforeSection, force3D: false, duration: 1.15, ease: "power3.inOut" }, "<");
+        .to(libraryLogo, { ...logoBeforeSection, force3D: false, duration: 1.15, ease: "power3.inOut" }, "<")
+        .to(wheelHint, { scale: 1, force3D: false, duration: 1.15, ease: "power3.inOut" }, "<");
 }
 
 function changeChannel(dir) {

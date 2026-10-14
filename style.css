@@ -281,13 +281,14 @@ html, body {
 
 /* 원본은 짙은 회색 선이라 흰색으로 바꿔 어두운 화면에서도 보이게 */
 .wheel-hint {
-    position: fixed;
-    right: 2.5vw;
+    position: absolute;
+    right: 2.5%;
     top: 50%;
-    width: clamp(36px, 3.6vw, 64px);
+    width: 11cqw;
     height: auto;
-    margin-top: calc(clamp(36px, 3.6vw, 64px) * -0.51);
-    z-index: 100;
+    margin-top: calc(11cqw * -0.51);
+    z-index: 9;
+    transform-origin: right center;
     filter: brightness(0) invert(1) drop-shadow(0 0 6px rgba(0, 0, 0, .6));
     opacity: 0;
     pointer-events: none;
@@ -295,8 +296,8 @@ html, body {
 }
 
 @keyframes wheel-bob {
-    0%, 100% { transform: translateY(-8px); }
-    50%      { transform: translateY(8px); }
+    0%, 100% { translate: 0 -8px; }
+    50%      { translate: 0 8px; }
 }
 
 /* 인트로 다음 칸. TV가 화면을 채운 뒤 이 위에서 풀화면으로 이어짐 */
