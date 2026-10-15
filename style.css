@@ -5,12 +5,20 @@ html, body, button {
     cursor: url("./images/cursor-custom-48.png") 12 2, auto;
 }
 
+html, body, p, h1, h2, h3, h4, h5, h6, span, a, button, li, label {
+    font-family: "Pretendard", "Malgun Gothic", sans-serif;
+}
+
 html, body {
     margin: 0;
     width: 100%;
     height: 100%;
     overflow: hidden;
     background: #000;
+}
+
+.c-ff3e5f {
+    color: #ff3e5f;
 }
 
 .intro {
@@ -142,7 +150,6 @@ html, body {
     margin: 0;
     padding: 0 3%;
     transform: translateY(-50%);
-    font-family: "Pretendard", "Malgun Gothic", sans-serif;
     font-size: 5cqw;
     font-weight: 600;
     /* line-height: 1.6; */
@@ -193,7 +200,6 @@ html, body {
     margin: 0;
     padding: 0 4%;
     transform: translateY(-50%);
-    font-family: "Pretendard", "Malgun Gothic", sans-serif;
     font-size: 4cqw;
     font-weight: 600;
     text-align: center;
@@ -307,10 +313,310 @@ html, body {
     width: 100vw;
     height: 100vh;
     z-index: 40;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 11vh 6vw 10vh;
     background: transparent;
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
+    text-align: center;
+}
+
+.section-intro h2,
+.section-intro p,
+.section-intro h3 {
+    opacity: 0;
+}
+
+/* 첫 문구 다음 단계. 첫 문구 자리 위에 겹쳐 뜸 */
+.section-cont {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3vh;
+    padding: 5vh 6vw;
+}
+
+.section-korea,
+.section-listening {
+    opacity: 0;
+}
+
+.section-korea p {
+    margin: 0 0 1.4vh;
+}
+
+/* 리스닝~라이팅 묶음이 빠진 뒤 화면 가운데에 겹쳐 뜨는 연도 */
+.section-year {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+}
+
+.year-inner {
+    position: relative;
+}
+
+.section-title .year-num {
+    font-size: 22vw;
+    line-height: 1;
+    letter-spacing: -0.04em;
+    font-variant-numeric: tabular-nums;
+    opacity: 0;
+}
+
+/* 숫자 자리 중심을 흔들지 않게 아래에 띄워 두고, 나타날 때 묶음째 위로 올린다 */
+.year-copy {
+    position: absolute;
+    left: 50%;
+    top: 100%;
+    width: 86vw;
+    translate: -50% 0;
+    padding-top: 4vh;
+    opacity: 0;
+}
+
+.section-title .year-copy p {
+    margin: 0;
+    font-size: 1.9vw;
+    font-weight: 500;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, .92);
+}
+
+.section-title .year-copy p + p {
+    margin-top: 2.4vh;
+}
+
+.section-listening {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3vh;
+}
+
+/* 리스닝 1672x941, 리딩 1536x693, 스피킹 1494x899, 라이팅 1536x934. 가로폭은 영상과 같게 두고 높이는 원본 비율로 맞춘다 */
+.listening-media {
+    position: relative;
+    height: min(42vh, calc(68vw * 941 / 1672));
+    aspect-ratio: 1672 / 941;
+    border-radius: 1.2vw;
+    overflow: hidden;
+    box-shadow: 0 1.4vw 4vw rgba(0, 0, 0, .45);
+    container-type: inline-size;
+    transition: height .8s cubic-bezier(.4, 0, .2, 1), aspect-ratio .8s cubic-bezier(.4, 0, .2, 1), border-radius .8s ease, box-shadow .8s ease;
+}
+
+.section-listening.is-reading .listening-media {
+    height: min(calc(42vh * 1672 / 941 * 693 / 1536), calc(68vw * 693 / 1536));
+    aspect-ratio: 1536 / 693;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.section-listening.is-speaking .listening-media {
+    height: min(calc(42vh * 1672 / 941 * 899 / 1494), calc(68vw * 899 / 1494));
+    aspect-ratio: 1494 / 899;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.section-listening.is-writing .listening-media {
+    height: min(calc(42vh * 1672 / 941 * 934 / 1536), calc(68vw * 934 / 1536));
+    aspect-ratio: 1536 / 934;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.listening-media img {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.media-listening,
+.media-reading,
+.media-speaking,
+.media-writing {
+    transition: opacity .8s ease;
+}
+
+.media-reading,
+.media-speaking,
+.media-writing {
+    z-index: 1;
+    opacity: 0;
+}
+
+.section-listening.is-reading .media-listening {
+    opacity: 0;
+}
+
+.section-listening.is-reading .media-reading {
+    opacity: 1;
+}
+
+.section-listening.is-speaking .media-listening,
+.section-listening.is-speaking .media-reading {
+    opacity: 0;
+}
+
+.section-listening.is-speaking .media-speaking {
+    opacity: 1;
+}
+
+.section-listening.is-writing .media-listening,
+.section-listening.is-writing .media-reading,
+.section-listening.is-writing .media-speaking {
+    opacity: 0;
+}
+
+.section-listening.is-writing .media-writing {
+    opacity: 1;
+}
+
+/* 하단 재생 바 위 자막. 리딩에선 오른쪽 페이지 한가운데로 옮겨 검은 글씨가 됨 */
+.media-caption {
+    position: absolute;
+    z-index: 2;
+    left: 50%;
+    top: 79%;
+    translate: -50% 0;
+    margin: 0;
+    padding: .25em .7em;
+    border-radius: .3em;
+    background: rgba(0, 0, 0, .62);
+    font-size: 3.6cqw;
+    font-weight: 600;
+    color: #fff;
+    white-space: nowrap;
+    transition: left .8s cubic-bezier(.4, 0, .2, 1), top .8s cubic-bezier(.4, 0, .2, 1), translate .8s cubic-bezier(.4, 0, .2, 1), color .45s ease, background-color .45s ease, padding .45s ease, font-size .8s ease, border-radius .45s ease;
+}
+
+.section-listening.is-reading .media-caption {
+    left: 72.5%;
+    top: 46%;
+    translate: -50% -50%;
+    padding: 0;
+    border-radius: 0;
+    background: transparent;
+    color: #1a1a1a;
+    font-size: 4.8cqw;
+    font-weight: 600;
+}
+
+/* 말풍선 흰 영역 한가운데. 타원은 이미지 위쪽 약 30%까지 */
+.section-listening.is-speaking .media-caption {
+    left: 50%;
+    top: 15.6%;
+    translate: -50% -50%;
+    padding: 0;
+    border-radius: 0;
+    background: transparent;
+    color: #1a1a1a;
+    font-size: 5.4cqw;
+    font-weight: 700;
+}
+
+/* 노트 두 번째 줄. 글자 하단이 줄에 걸리게 */
+.section-listening.is-writing .media-caption {
+    left: 50%;
+    top: 11.35%;
+    translate: -50% -92%;
+    padding: 0;
+    border-radius: 0;
+    background: transparent;
+    color: #1a1a1a;
+    font-size: 2.7cqw;
+    font-weight: 600;
+}
+
+.media-copy {
+    display: grid;
+    margin: 0;
+    font-size: 2.6vw;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    color: #fff;
+}
+
+.copy-listening,
+.copy-reading,
+.copy-speaking,
+.copy-writing {
+    grid-area: 1 / 1;
+    transition: opacity .45s ease;
+}
+
+.copy-reading,
+.copy-speaking,
+.copy-writing {
+    opacity: 0;
+}
+
+.section-listening.is-reading .copy-listening {
+    opacity: 0;
+}
+
+.section-listening.is-reading .copy-reading {
+    opacity: 1;
+}
+
+.section-listening.is-speaking .copy-listening,
+.section-listening.is-speaking .copy-reading {
+    opacity: 0;
+}
+
+.section-listening.is-speaking .copy-speaking {
+    opacity: 1;
+}
+
+.section-listening.is-writing .copy-listening,
+.section-listening.is-writing .copy-reading,
+.section-listening.is-writing .copy-speaking {
+    opacity: 0;
+}
+
+.section-listening.is-writing .copy-writing {
+    opacity: 1;
+}
+
+.section-title h2 {
+    margin: 0;
+    font-size: 7vw;
+    font-weight: 900;
+    line-height: 1.18;
+    letter-spacing: -0.045em;
+    color: #fff;
+}
+
+.section-title h3 {
+    margin: 0;
+    font-size: 5vw;
+    font-weight: 500;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    color: rgba(255, 255, 255, .92);
+}
+
+.section-title p {
+    margin: 3.2vh 0 0;
+    font-size: 2vw;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    color: rgba(255, 255, 255, .92);
 }
 
 .fullscreen-noise {

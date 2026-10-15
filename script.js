@@ -17,6 +17,13 @@ const libraryClass = document.querySelector(".library-class");
 const librarySlot = document.querySelector(".library-slot");
 const roomBg = document.querySelector(".room-bg");
 const section01 = document.querySelector(".section01");
+const sectionCopy = document.querySelectorAll(".section-intro h2, .section-intro p");
+const sectionKorea = document.querySelector(".section-korea");
+const sectionCont = document.querySelector(".section-cont");
+const sectionListening = document.querySelector(".section-listening");
+const yearInner = document.querySelector(".year-inner");
+const yearNum = document.querySelector(".year-num");
+const yearCopy = document.querySelector(".year-copy");
 const remote = document.querySelector(".remote");
 const wheelHint = document.querySelector(".wheel-hint");
 const remoteNext = document.querySelector(".remote-next");
@@ -54,6 +61,9 @@ let channelTl = null;
 let introDone = false;
 let switching = false;
 let onSection01 = false;
+// section01 단계: 0 로고만 크게, 1 첫 문구, 2 한국 문구, 3 리스닝, 4 리딩, 5 스피킹, 6 라이팅, 7 2000년, 8 2020년까지 카운트
+let sectionStep = 0;
+let logoBigPose = null;
 let section01Tl = null;
 let logoBeforeSection = null;
 // 도서관 채널 단계: 0 이미지만, 1 큰 제목, 2 소개 문구, 3 로고와 CLASS 문구
@@ -145,6 +155,8 @@ function resetIntro() {
     introDone = false;
     switching = false;
     onSection01 = false;
+    sectionStep = 0;
+    sectionListening.classList.remove("is-reading", "is-speaking", "is-writing");
     libraryStep = 0;
     currentChannel = 0;
     storyImg.src = channelSources[0];
@@ -177,9 +189,17 @@ function resetIntro() {
         section01Tl.kill();
         section01Tl = null;
     }
-    gsap.killTweensOf([scene, roomBg, section01]);
+    gsap.killTweensOf([scene, roomBg, section01, sectionCopy, sectionKorea, sectionListening, sectionCont]);
     gsap.set(roomBg, { opacity: 1 });
     gsap.set(section01, { opacity: 0, visibility: "hidden" });
+    gsap.set(sectionCopy, { opacity: 0, y: 20 });
+    gsap.set([sectionKorea, sectionListening], { opacity: 0, y: 0, scale: 1 });
+    gsap.set(sectionCont, { y: 0, opacity: 1 });
+    gsap.killTweensOf([yearInner, yearNum, yearCopy]);
+    gsap.set(yearInner, { y: 0 });
+    gsap.set(yearNum, { opacity: 0, scale: 1 });
+    gsap.set(yearCopy, { opacity: 0, y: 0 });
+    yearNum.textContent = "2000";
 
     gsap.set(fullscreenNoise, {
         display: "none",
@@ -234,7 +254,7 @@ function setRemoteVisible(visible) {
 function floatRemote() {
     gsap.killTweensOf(remote);
     gsap.set(remote, { xPercent: -50, y: 0, rotation: -6, opacity: 1 });
-    gsap.set(wheelHint, { opacity: 0, scale: 1 });
+    gsap.set(wheelHint, { opacity: 0, x: 0, y: 0, scale: 1 });
     remoteNext.style.pointerEvents = "";
     gsap.to(remote, {
         y: 16,
@@ -437,17 +457,53 @@ function tvFillPose() {
     };
 }
 
-// 지금 위치에서 TV 한가운데로. scale은 화면을 채운 뒤에도 로고가 크게 남도록
+// TV가 화면을 채울 때 로고가 한가운데에서 커진 채로 남는 위치
 function logoCenterPose() {
     const tv = tvContent.getBoundingClientRect();
     const logo = libraryLogo.getBoundingClientRect();
-    const dx = (tv.left + tv.width / 2) - (logo.left + logo.width / 2);
-    const dy = (tv.top + tv.height / 2) - (logo.top + logo.height / 2);
 
     return {
-        x: gsap.getProperty(libraryLogo, "x") + dx,
-        y: gsap.getProperty(libraryLogo, "y") + dy,
+        x: gsap.getProperty(libraryLogo, "x") + ((tv.left + tv.width / 2) - (logo.left + logo.width / 2)),
+        y: gsap.getProperty(libraryLogo, "y") + ((tv.top + tv.height / 2) - (logo.top + logo.height / 2)),
         scale: 2.6
+    };
+}
+
+// TV가 화면보다 넓게 커지면 오른쪽 끝의 휠이 화면 밖으로 나간다.
+// 화면 오른쪽 가운데에 남도록, 지금 위치에서 옮길 양을 계산
+function wheelFillPose(scenePose) {
+    const hint = wheelHint.getBoundingClientRect();
+    const wheelScale = gsap.getProperty(wheelHint, "scale") || 1;
+    const hintWidth = hint.width / wheelScale;
+    const hintTarget = Math.min(64, Math.max(36, window.innerWidth * 0.036));
+    const sceneScale = scenePose.scale;
+
+    const tv = tvContent.getBoundingClientRect();
+    const tvX = tv.left + tv.width / 2;
+    const tvY = tv.top + tv.height / 2;
+    const anchorX = hint.right;
+    const anchorY = hint.top + hint.height / 2;
+    const margin = Math.max(24, window.innerWidth * 0.028);
+
+    return {
+        x: (window.innerWidth - margin - window.innerWidth / 2) / sceneScale - (anchorX - tvX),
+        y: tvY - anchorY,
+        scale: hintTarget / (hintWidth * sceneScale),
+        transformOrigin: "right center"
+    };
+}
+
+// 이미 화면을 채운 뒤, 로고를 위쪽 가운데로 보낼 위치
+function logoTopPose() {
+    const logo = libraryLogo.getBoundingClientRect();
+    const sceneScale = gsap.getProperty(scene, "scale") || 1;
+    const logoScale = gsap.getProperty(libraryLogo, "scale") || 1;
+    const desired = Math.min(window.innerHeight * 0.18, 220);
+
+    return {
+        x: gsap.getProperty(libraryLogo, "x") + (window.innerWidth / 2 - (logo.left + logo.width / 2)) / sceneScale,
+        y: gsap.getProperty(libraryLogo, "y") + (window.innerHeight * 0.26 - (logo.top + logo.height / 2)) / sceneScale,
+        scale: desired * logoScale / logo.height
     };
 }
 
@@ -462,10 +518,10 @@ function enterSection01() {
         scale: gsap.getProperty(libraryLogo, "scale")
     };
 
-    const hintWidth = wheelHint.getBoundingClientRect().width / (gsap.getProperty(wheelHint, "scale") || 1);
-    const hintTarget = Math.min(64, Math.max(36, window.innerWidth * 0.036));
+    const hint = wheelFillPose(pose);
 
-    gsap.set(section01, { visibility: "visible" });
+    gsap.set(section01, { visibility: "visible", opacity: 1 });
+    gsap.set(sectionCopy, { opacity: 0, y: 20 });
     gsap.set(scene, { transformOrigin: pose.origin });
     gsap.killTweensOf([libraryLogo, libraryClass, libraryDesc, story, noiseCanvas, scanline, rgbTint, wheelHint]);
 
@@ -480,13 +536,275 @@ function enterSection01() {
         .to([noiseCanvas, scanline, rgbTint, libraryClass], { opacity: 0, duration: .55 }, "<")
         .to(libraryDesc, { "--dim": 0, duration: .55 }, "<")
         .to(libraryLogo, { ...logo, force3D: false, duration: 1.35, ease: "power3.inOut" }, "<")
-        .to(wheelHint, { scale: hintTarget / (hintWidth * pose.scale), force3D: false, duration: 1.35, ease: "power3.inOut" }, "<")
-        .to(section01, { opacity: 1, duration: .4 }, "-=.2");
+        .to(wheelHint, { ...hint, force3D: false, duration: 1.35, ease: "power3.inOut" }, "<");
+}
+
+function showSectionMessage() {
+    sectionStep = 1;
+    switching = true;
+    logoBigPose = {
+        x: gsap.getProperty(libraryLogo, "x"),
+        y: gsap.getProperty(libraryLogo, "y"),
+        scale: gsap.getProperty(libraryLogo, "scale")
+    };
+
+    section01Tl = gsap.timeline({
+        onComplete: () => { switching = false; }
+    });
+    section01Tl
+        .to(libraryLogo, { ...logoTopPose(), force3D: false, duration: .9, ease: "power3.inOut" })
+        .to(sectionCopy, { opacity: 1, y: 0, duration: .8, ease: "power2.out", stagger: .12 }, "-=.4");
+}
+
+function hideSectionMessage() {
+    sectionStep = 0;
+    switching = true;
+
+    section01Tl = gsap.timeline({
+        onComplete: () => { switching = false; }
+    });
+    section01Tl
+        .to(sectionCopy, { opacity: 0, y: 16, duration: .25 })
+        .to(libraryLogo, { ...logoBigPose, force3D: false, duration: .8, ease: "power3.inOut" }, "<");
+}
+
+// 리스닝 이미지가 아래에 깔릴 자리를 비워둔 채라, 문구만 있을 땐 화면 가운데로 내려야 함
+// offsetTop은 transform 영향을 안 받아서 움직이는 중에도 원래 자리 기준으로 잴 수 있음
+function koreaCenterY() {
+    return window.innerHeight / 2 - (sectionKorea.offsetTop + sectionKorea.offsetHeight / 2);
+}
+
+function showKoreaMessage() {
+    sectionStep = 2;
+    switching = true;
+    const centerY = koreaCenterY();
+
+    section01Tl = gsap.timeline({
+        onComplete: () => { switching = false; }
+    });
+    section01Tl
+        .to(sectionCopy, { opacity: 0, y: -16, duration: .4, ease: "power2.in" })
+        .to(libraryLogo, { opacity: 0, duration: .4, ease: "power2.in" }, "<")
+        .fromTo(sectionKorea,
+            { opacity: 0, y: centerY + 30, scale: 1 },
+            { opacity: 1, y: centerY, duration: .8, ease: "power2.out" }, "-=.05");
+}
+
+function hideKoreaMessage() {
+    sectionStep = 1;
+    switching = true;
+
+    section01Tl = gsap.timeline({
+        onComplete: () => { switching = false; }
+    });
+    section01Tl
+        .to(sectionKorea, { opacity: 0, y: "+=20", duration: .3 })
+        .to(libraryLogo, { opacity: 1, duration: .5 })
+        .to(sectionCopy, { opacity: 1, y: 0, duration: .6, ease: "power2.out", stagger: .1 }, "<");
+}
+
+// 제목은 작아져도 자리 높이는 그대로라, 보이는 묶음(작은 제목 + 이미지 + 문구)의 중심을 화면 가운데로 맞춘다
+function stackCenterY(mediaHeight) {
+    const scale = 0.62;
+    const media = sectionListening.querySelector(".listening-media");
+    const copy = sectionListening.querySelector(".media-copy");
+    const innerGap = sectionListening.offsetHeight - media.offsetHeight - copy.offsetHeight;
+    const visualTop = sectionKorea.offsetTop + sectionKorea.offsetHeight * (1 - scale);
+    const visualBottom = sectionListening.offsetTop + mediaHeight + innerGap + copy.offsetHeight;
+    return window.innerHeight / 2 - (visualTop + visualBottom) / 2;
+}
+
+function mediaBoxHeight(mode) {
+    const vh = window.innerHeight / 100;
+    const vw = window.innerWidth / 100;
+    const listenH = Math.min(42 * vh, 68 * vw * 941 / 1672);
+    if (mode === "writing") return listenH * 1672 / 941 * 934 / 1536;
+    if (mode === "speaking") return listenH * 1672 / 941 * 899 / 1494;
+    if (mode === "reading") return listenH * 1672 / 941 * 693 / 1536;
+    return listenH;
+}
+
+function showListening() {
+    sectionStep = 3;
+    switching = true;
+
+    section01Tl = gsap.timeline({
+        onComplete: () => { switching = false; }
+    });
+    section01Tl
+        .to(sectionKorea, { y: 0, scale: .62, transformOrigin: "center bottom", duration: .9, ease: "power3.inOut" })
+        .to(sectionCont, { y: stackCenterY(mediaBoxHeight("listening")), duration: .9, ease: "power3.inOut" }, "<")
+        .fromTo(sectionListening,
+            { opacity: 0, y: 40 },
+            { opacity: 1, y: 0, duration: .8, ease: "power2.out" }, "-=.45");
+}
+
+function hideListening() {
+    sectionStep = 2;
+    switching = true;
+    const centerY = koreaCenterY();
+
+    section01Tl = gsap.timeline({
+        onComplete: () => { switching = false; }
+    });
+    section01Tl
+        .to(sectionListening, { opacity: 0, y: 30, duration: .35 })
+        .to(sectionCont, { y: 0, duration: .8, ease: "power3.inOut" }, "<")
+        .to(sectionKorea, { y: centerY, scale: 1, duration: .8, ease: "power3.inOut" }, "<");
+}
+
+function showReading() {
+    sectionStep = 4;
+    switching = true;
+    const y = stackCenterY(mediaBoxHeight("reading"));
+    sectionListening.classList.add("is-reading");
+
+    section01Tl = gsap.timeline({
+        onComplete: () => { switching = false; }
+    });
+    section01Tl
+        .to(sectionCont, { y, duration: .85, ease: "power3.inOut" });
+}
+
+function hideReading() {
+    sectionStep = 3;
+    switching = true;
+    const y = stackCenterY(mediaBoxHeight("listening"));
+    sectionListening.classList.remove("is-reading", "is-speaking", "is-writing");
+
+    section01Tl = gsap.timeline({
+        onComplete: () => { switching = false; }
+    });
+    section01Tl
+        .to(sectionCont, { y, duration: .85, ease: "power3.inOut" });
+}
+
+function showSpeaking() {
+    sectionStep = 5;
+    switching = true;
+    const y = stackCenterY(mediaBoxHeight("speaking"));
+    sectionListening.classList.add("is-speaking");
+
+    section01Tl = gsap.timeline({
+        onComplete: () => { switching = false; }
+    });
+    section01Tl
+        .to(sectionCont, { y, duration: .85, ease: "power3.inOut" });
+}
+
+function hideSpeaking() {
+    sectionStep = 4;
+    switching = true;
+    const y = stackCenterY(mediaBoxHeight("reading"));
+    sectionListening.classList.remove("is-speaking");
+
+    section01Tl = gsap.timeline({
+        onComplete: () => { switching = false; }
+    });
+    section01Tl
+        .to(sectionCont, { y, duration: .85, ease: "power3.inOut" });
+}
+
+function showWriting() {
+    sectionStep = 6;
+    switching = true;
+    const y = stackCenterY(mediaBoxHeight("writing"));
+    sectionListening.classList.add("is-writing");
+
+    section01Tl = gsap.timeline({
+        onComplete: () => { switching = false; }
+    });
+    section01Tl
+        .to(sectionCont, { y, duration: .85, ease: "power3.inOut" });
+}
+
+function hideWriting() {
+    sectionStep = 5;
+    switching = true;
+    const y = stackCenterY(mediaBoxHeight("speaking"));
+    sectionListening.classList.remove("is-writing");
+
+    section01Tl = gsap.timeline({
+        onComplete: () => { switching = false; }
+    });
+    section01Tl
+        .to(sectionCont, { y, duration: .85, ease: "power3.inOut" });
+}
+
+function showYear() {
+    sectionStep = 7;
+    switching = true;
+    yearNum.textContent = "2000";
+
+    section01Tl = gsap.timeline({
+        onComplete: () => { switching = false; }
+    });
+    section01Tl
+        .to(sectionCont, { opacity: 0, y: "-=40", duration: .5, ease: "power2.in" })
+        .fromTo(yearNum,
+            { opacity: 0, scale: .7 },
+            { opacity: 1, scale: 1, duration: .9, ease: "expo.out" }, "-=.1");
+}
+
+function hideYear() {
+    sectionStep = 6;
+    switching = true;
+    const y = stackCenterY(mediaBoxHeight("writing"));
+
+    section01Tl = gsap.timeline({
+        onComplete: () => { switching = false; }
+    });
+    section01Tl
+        .to(yearNum, { opacity: 0, scale: .8, duration: .35, ease: "power2.in" })
+        .fromTo(sectionCont, { y: y - 40 }, { opacity: 1, y, duration: .6, ease: "power2.out" });
+}
+
+function showYearCount() {
+    sectionStep = 8;
+    switching = true;
+    const counter = { value: 2000 };
+    const lift = -(yearCopy.offsetHeight / 2);
+
+    section01Tl = gsap.timeline({
+        onComplete: () => { switching = false; }
+    });
+    section01Tl
+        .to(counter, {
+            value: 2020,
+            duration: .7,
+            ease: "power1.in",
+            onUpdate: () => { yearNum.textContent = Math.round(counter.value); }
+        })
+        .to(yearNum, { scale: 1.08, duration: .12, yoyo: true, repeat: 1, ease: "power2.out" })
+        .to(yearInner, { y: lift, duration: .8, ease: "power3.inOut" }, "-=.05")
+        .fromTo(yearCopy,
+            { opacity: 0, y: 24 },
+            { opacity: 1, y: 0, duration: .7, ease: "power2.out" }, "-=.4");
+}
+
+function hideYearCount() {
+    sectionStep = 7;
+    switching = true;
+    const counter = { value: 2020 };
+
+    section01Tl = gsap.timeline({
+        onComplete: () => { switching = false; }
+    });
+    section01Tl
+        .to(yearCopy, { opacity: 0, y: 16, duration: .3 })
+        .to(yearInner, { y: 0, duration: .7, ease: "power3.inOut" }, "<")
+        .to(counter, {
+            value: 2000,
+            duration: .5,
+            ease: "power1.out",
+            onUpdate: () => { yearNum.textContent = Math.round(counter.value); }
+        }, "<");
 }
 
 function leaveSection01() {
     onSection01 = false;
     switching = true;
+    sectionListening.classList.remove("is-reading", "is-speaking", "is-writing");
 
     section01Tl = gsap.timeline({
         onComplete: () => {
@@ -495,7 +813,8 @@ function leaveSection01() {
         }
     });
     section01Tl
-        .to(section01, { opacity: 0, duration: .25 })
+        .to(sectionCopy, { opacity: 0, y: 16, duration: .25 })
+        .to(section01, { opacity: 0, duration: .25 }, "<")
         .to(scene, { scale: 1, x: 0, y: 0, duration: 1.15, ease: "power3.inOut" }, "<")
         .to(roomBg, { opacity: 1, duration: 1.15, ease: "power2.inOut" }, "<")
         .to(story, { opacity: 1, duration: .7 }, "<")
@@ -505,14 +824,19 @@ function leaveSection01() {
         .to(libraryDesc, { "--dim": 1, duration: .7 }, "<")
         .to(libraryClass, { opacity: 1, duration: .7 }, "<")
         .to(libraryLogo, { ...logoBeforeSection, force3D: false, duration: 1.15, ease: "power3.inOut" }, "<")
-        .to(wheelHint, { scale: 1, force3D: false, duration: 1.15, ease: "power3.inOut" }, "<");
+        .to(wheelHint, { x: 0, y: 0, scale: 1, force3D: false, duration: 1.15, ease: "power3.inOut" }, "<");
 }
 
 function changeChannel(dir) {
     if (!introDone || switching) return;
 
     if (onSection01) {
-        if (dir < 0) leaveSection01();
+        if (dir > 0) {
+            const next = [showSectionMessage, showKoreaMessage, showListening, showReading, showSpeaking, showWriting, showYear, showYearCount][sectionStep];
+            if (next) next();
+        } else {
+            [leaveSection01, hideSectionMessage, hideKoreaMessage, hideListening, hideReading, hideSpeaking, hideWriting, hideYear, hideYearCount][sectionStep]();
+        }
         return;
     }
 
