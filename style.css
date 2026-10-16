@@ -619,6 +619,146 @@ html, body {
     color: rgba(255, 255, 255, .92);
 }
 
+/* 연도 다음. 큰 제목이 좌측 상단으로 붙으면 일러스트와 문구가 나란히 뜬다 */
+.section02 {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    overflow: hidden;
+    background: #f4efe6;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.philosophy {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 4.4vh 5vw 4.2vh;
+}
+
+.philosophy-title {
+    margin: 0;
+    flex: none;
+    align-self: flex-start;
+    font-size: 2.15vw;
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: -0.045em;
+    color: #1c1917;
+    white-space: nowrap;
+    transform-origin: left center;
+}
+
+/* 내용 묶음은 같은 자리에 겹쳐 두고, 다음 묶음이 아래에서 올라와 앞 묶음을 덮는다 */
+.philosophy-stages {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    margin-top: 2.6vh;
+}
+
+.philosophy-stage {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1.22fr) minmax(0, .88fr);
+    gap: 3.8vw;
+    background: #f4efe6;
+    opacity: 0;
+}
+
+.philosophy-visual {
+    margin: 0;
+    height: 100%;
+    border-radius: 1.5vw;
+    overflow: hidden;
+    background: #efe6d8;
+    box-shadow: 0 1.2vw 3vw rgba(90, 60, 30, .12);
+}
+
+.philosophy-visual img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.philosophy-visual.is-closeup img {
+    object-position: 48% 52%;
+    transform: scale(1.38);
+    transform-origin: 46% 60%;
+}
+
+.philosophy-copy {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 0;
+    padding: 1vh 1.2vw 2vh 0;
+}
+
+.philosophy-kicker {
+    margin: 0 0 1.5vh;
+    font-size: 1.15vw;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: #ef8a22;
+}
+
+.philosophy-kicker span {
+    font-weight: 800;
+}
+
+.philosophy-copy h3 {
+    margin: 0 0 2.8vh;
+    font-size: 3.45vw;
+    font-weight: 900;
+    line-height: 1.16;
+    letter-spacing: -0.05em;
+    color: #1c1917;
+}
+
+.philosophy-lead {
+    margin: 0;
+    font-size: 1.18vw;
+    font-weight: 500;
+    line-height: 1.75;
+    letter-spacing: -0.028em;
+    color: #3c372f;
+}
+
+.philosophy-lead + .philosophy-lead {
+    margin-top: 1.8vh;
+}
+
+/* 앞 화면 휠은 36~64px(3.6vw) 상자. 원본 1243x1266 중 아이콘은 554x784라 그 비율만 남긴다 */
+.philosophy-wheel {
+    --wheel-box: min(64px, max(36px, 3.6vw));
+    position: absolute;
+    right: 1.4vw;
+    top: 50%;
+    width: 2.5vw;
+    width: calc(var(--wheel-box) * 554 / 1243);
+    aspect-ratio: 554 / 784;
+    margin-top: calc(2.5vw * 784 / 554 / -2);
+    margin-top: calc(var(--wheel-box) * 784 / 1243 / -2);
+    overflow: hidden;
+    animation: wheel-bob 1.4s ease-in-out infinite;
+    pointer-events: none;
+}
+
+.philosophy-wheel img {
+    position: absolute;
+    width: 224.4%;
+    max-width: none;
+    height: auto;
+    left: -62.1%;
+    top: -37.2%;
+}
+
 .fullscreen-noise {
     position: fixed;
     inset: 0;
@@ -677,4 +817,236 @@ html, body {
     transform: scaleY(0);
     z-index: 25;
     pointer-events: none;
+}
+
+/* 가족 이야기. 말풍선 몸통과 꼬리는 배경색만으로 그린다 */
+.section03 {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    overflow: hidden;
+    background:
+        radial-gradient(circle at 18% 30%, rgba(255, 214, 236, .45), transparent 24%),
+        radial-gradient(circle at 82% 68%, rgba(214, 236, 255, .5), transparent 26%),
+        #f7f8fb;
+    opacity: 0;
+    visibility: hidden;
+}
+
+.stories {
+    position: absolute;
+    inset: 0;
+    padding: 6vh 4vw 5vh;
+}
+
+.stories-title {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    z-index: 3;
+    width: max-content;
+    max-width: 42vw;
+    margin: 0;
+    font-size: 4.6vw;
+    font-weight: 900;
+    line-height: 1.18;
+    letter-spacing: -0.05em;
+    text-align: center;
+    color: #243056;
+    pointer-events: none;
+    translate: -50% -50%;
+}
+
+.story-wall {
+    position: absolute;
+    inset: 0;
+}
+
+.bubble {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    gap: 1.15vw;
+    padding: 1.15vw 1.6vw;
+    border: 0;
+    border-radius: 2.8vw;
+    background: #efe7fb;
+    color: #2b3348;
+    text-align: left;
+    box-shadow: 0 .8vw 2vw rgba(90, 110, 150, .14);
+    transform-origin: center center;
+    transition: opacity .35s ease;
+}
+
+.bubble::after {
+    content: "";
+    position: absolute;
+    width: 1.15vw;
+    height: 1.15vw;
+    background: inherit;
+    border-radius: .25vw;
+}
+
+.bubble-label {
+    font-size: 1.75vw;
+    font-weight: 800;
+    line-height: 1.25;
+    letter-spacing: -0.04em;
+}
+
+.bubble { max-width: 28vw; }
+.bubble-meet { left: 2.5%; top: 43.7%; background: #f8e4f2; }
+.bubble-meet::after { right: -.45vw; top: 42%; transform: rotate(-24deg); }
+.bubble-read { left: 6.4%; top: 10.3%; background: #ece6ff; }
+.bubble-read::after { left: 72%; bottom: -.48vw; transform: rotate(24deg); }
+.bubble-choose { left: 10%; top: 80.7%; background: #d9efff; }
+.bubble-choose::after { left: 68%; top: -.55vw; width: 1.7vw; height: 1.7vw; transform: rotate(40deg); }
+.bubble-habit { left: 67.3%; top: 9.5%; background: #fff4c8; }
+.bubble-habit::after { left: 18%; bottom: -.48vw; transform: rotate(18deg); }
+.bubble-speak { left: 64.2%; top: 76.4%; background: #eee7ff; }
+.bubble-speak::after { left: 22%; top: -.5vw; transform: rotate(28deg); }
+
+.bubble.is-gone {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.story-dim {
+    position: fixed;
+    inset: 0;
+    z-index: 70;
+    background: rgba(20, 24, 36, .5);
+}
+
+.story-card[hidden],
+.story-dim[hidden] {
+    display: none !important;
+}
+
+.story-card {
+    position: fixed;
+    inset: 0;
+    z-index: 80;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    width: 50vw;
+    height: 50vh;
+    margin: auto;
+    padding: 1.1vw 1.2vw 1vw;
+    border-radius: 1.2vw;
+    background: #fff;
+    box-shadow: 0 1.4vw 3.5vw rgba(70, 90, 130, .16);
+    overflow: hidden;
+}
+
+.story-close {
+    position: absolute;
+    top: .55vw;
+    right: .55vw;
+    z-index: 2;
+    width: 1.8vw;
+    height: 1.8vw;
+    border: 0;
+    border-radius: 50%;
+    background: #fff;
+    color: #445;
+    font-size: 1.2vw;
+    line-height: 1;
+    box-shadow: 0 .15vw .5vw rgba(40, 50, 70, .18);
+}
+
+.story-stage {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: 17vw 1fr;
+    gap: 1.2vw;
+}
+
+.story-side {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 0;
+    gap: .8vw;
+    padding: 1vw;
+    border-radius: .8vw;
+    background: #f4f6fa;
+}
+
+.story-main {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    gap: .8vw;
+}
+
+.story-photo {
+    flex: none;
+    width: 4vw;
+    height: 4vw;
+    object-fit: contain;
+    border-radius: 50%;
+    background: #eef2f7;
+}
+
+.story-meta {
+    flex: none;
+    margin: 0;
+    font-size: .78vw;
+    font-weight: 700;
+    line-height: 1.45;
+    letter-spacing: -0.03em;
+    color: #31405f;
+    white-space: pre-line;
+}
+
+.story-video {
+    flex: 6 1 0;
+    min-width: 0;
+    min-height: 0;
+    border-radius: .8vw;
+    overflow: hidden;
+    background: #111820;
+}
+
+.story-video video {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background: #111820;
+}
+
+.story-copy {
+    flex: 4 1 0;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-right: .4vw;
+    font-size: .82vw;
+    font-weight: 500;
+    line-height: 1.55;
+    letter-spacing: -0.03em;
+    color: #243056;
+}
+
+.story-copy p {
+    margin: 0 0 .55vw;
+}
+
+.story-copy p:last-child {
+    margin-bottom: 0;
+}
+
+.story-copy::-webkit-scrollbar {
+    width: .35vw;
+}
+
+.story-copy::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: #c5ceda;
 }

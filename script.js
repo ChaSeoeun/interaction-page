@@ -24,6 +24,20 @@ const sectionListening = document.querySelector(".section-listening");
 const yearInner = document.querySelector(".year-inner");
 const yearNum = document.querySelector(".year-num");
 const yearCopy = document.querySelector(".year-copy");
+const section02 = document.querySelector(".section02");
+const philosophyTitle = document.querySelector(".philosophy-title");
+const [philosophyStage, philosophyEarly, philosophyFun] = document.querySelectorAll(".philosophy-stage");
+const section03 = document.querySelector(".section03");
+const storyWall = document.querySelector(".story-wall");
+const storyBubbles = document.querySelectorAll(".bubble");
+const storyCard = document.querySelector(".story-card");
+const storyDim = document.querySelector(".story-dim");
+const storyPhoto = document.querySelector(".story-photo");
+const storyMeta = document.querySelector(".story-meta");
+const interviewVideo = document.querySelector(".story-video video");
+const interviewSource = interviewVideo.querySelector("source");
+const storyCopy = document.querySelector(".story-copy");
+const storyClose = document.querySelector(".story-close");
 const remote = document.querySelector(".remote");
 const wheelHint = document.querySelector(".wheel-hint");
 const remoteNext = document.querySelector(".remote-next");
@@ -63,6 +77,12 @@ let switching = false;
 let onSection01 = false;
 // section01 단계: 0 로고만 크게, 1 첫 문구, 2 한국 문구, 3 리스닝, 4 리딩, 5 스피킹, 6 라이팅, 7 2000년, 8 2020년까지 카운트
 let sectionStep = 0;
+let onSection02 = false;
+let onSection03 = false;
+let section03Tl = null;
+// section02 단계: 0 큰 제목, 1 듣기부터, 2 가능한 일찍, 3 쉽고 재미있게
+let section02Step = 0;
+let section02Tl = null;
 let logoBigPose = null;
 let section01Tl = null;
 let logoBeforeSection = null;
@@ -156,6 +176,8 @@ function resetIntro() {
     switching = false;
     onSection01 = false;
     sectionStep = 0;
+    onSection02 = false;
+    section02Step = 0;
     sectionListening.classList.remove("is-reading", "is-speaking", "is-writing");
     libraryStep = 0;
     currentChannel = 0;
@@ -200,6 +222,26 @@ function resetIntro() {
     gsap.set(yearNum, { opacity: 0, scale: 1 });
     gsap.set(yearCopy, { opacity: 0, y: 0 });
     yearNum.textContent = "2000";
+
+    if (section02Tl) {
+        section02Tl.kill();
+        section02Tl = null;
+    }
+    gsap.killTweensOf([section02, philosophyTitle, philosophyStage, philosophyEarly, philosophyFun]);
+    gsap.set(section02, { opacity: 0, visibility: "hidden" });
+    gsap.set(philosophyTitle, { x: 0, y: 0, scale: 1, opacity: 1 });
+    gsap.set(philosophyStage, { opacity: 0, y: 36, scale: 1 });
+    gsap.set([philosophyEarly, philosophyFun], { opacity: 0, y: 0, scale: 1 });
+
+    onSection03 = false;
+    if (section03Tl) {
+        section03Tl.kill();
+        section03Tl = null;
+    }
+    closeStory(false);
+    setStoryFloat(false);
+    gsap.killTweensOf(section03);
+    gsap.set(section03, { opacity: 0, visibility: "hidden" });
 
     gsap.set(fullscreenNoise, {
         display: "none",
@@ -770,7 +812,7 @@ function showYearCount() {
     });
     section01Tl
         .to(counter, {
-            value: 2020,
+            value: 2026,
             duration: .7,
             ease: "power1.in",
             onUpdate: () => { yearNum.textContent = Math.round(counter.value); }
@@ -801,6 +843,162 @@ function hideYearCount() {
         }, "<");
 }
 
+// 작은 제목 자리에서 화면 가운데로 키울 때. 왼쪽 가운데를 기준으로 커진다
+function philosophyTitleCenter() {
+    const w = philosophyTitle.offsetWidth;
+    const h = philosophyTitle.offsetHeight;
+    const frame = philosophyTitle.parentElement.getBoundingClientRect();
+    const originX = frame.left + philosophyTitle.offsetLeft;
+    const originY = frame.top + philosophyTitle.offsetTop + h / 2;
+    const scale = Math.min(3, Math.max(1.8, (window.innerWidth * 0.8) / w));
+
+    return {
+        x: window.innerWidth / 2 - originX - (w * scale) / 2,
+        y: window.innerHeight * 0.46 - originY,
+        scale
+    };
+}
+
+function enterSection02() {
+    onSection02 = true;
+    section02Step = 0;
+    switching = true;
+
+    gsap.set(section02, { visibility: "visible", opacity: 0 });
+    gsap.set(philosophyTitle, { x: 0, y: 0, scale: 1, opacity: 1 });
+    gsap.set(philosophyStage, { opacity: 0, y: 36, scale: 1 });
+    gsap.set([philosophyEarly, philosophyFun], { opacity: 0, y: 0, scale: 1 });
+    const pose = philosophyTitleCenter();
+
+    if (section02Tl) section02Tl.kill();
+    section02Tl = gsap.timeline({
+        onComplete: () => { switching = false; }
+    });
+    section02Tl
+        .to(section01, { opacity: 0, duration: .4, ease: "power2.in" })
+        .to(section02, { opacity: 1, duration: .55, ease: "power2.out" }, "-=.12")
+        .fromTo(philosophyTitle,
+            { ...pose, opacity: 0, y: pose.y + 26, force3D: false },
+            { ...pose, opacity: 1, duration: .7, ease: "power2.out", force3D: false }, "<");
+}
+
+function leaveSection02() {
+    onSection02 = false;
+    switching = true;
+
+    if (section02Tl) section02Tl.kill();
+    section02Tl = gsap.timeline({
+        onComplete: () => {
+            gsap.set(section02, { visibility: "hidden" });
+            gsap.set(philosophyTitle, { x: 0, y: 0, scale: 1, opacity: 1 });
+            switching = false;
+        }
+    });
+    section02Tl
+        .to(philosophyTitle, { opacity: 0, duration: .25 })
+        .to(section02, { opacity: 0, duration: .35 }, "<")
+        .to(section01, { opacity: 1, duration: .45, ease: "power2.out" }, "-=.1");
+}
+
+function showPhilosophyDetail() {
+    section02Step = 1;
+    switching = true;
+
+    if (section02Tl) section02Tl.kill();
+    section02Tl = gsap.timeline({
+        onComplete: () => {
+            gsap.set(philosophyTitle, { clearProps: "transform" });
+            switching = false;
+        }
+    });
+    section02Tl
+        .to(philosophyTitle, { x: 0, y: 0, scale: 1, duration: .9, ease: "power3.inOut", force3D: false })
+        .fromTo(philosophyStage,
+            { opacity: 0, y: 32 },
+            { opacity: 1, y: 0, duration: .75, ease: "power2.out" }, "-=.42");
+}
+
+function hidePhilosophyDetail() {
+    section02Step = 0;
+    switching = true;
+    const pose = philosophyTitleCenter();
+
+    if (section02Tl) section02Tl.kill();
+    section02Tl = gsap.timeline({
+        onComplete: () => { switching = false; }
+    });
+    section02Tl
+        .to(philosophyStage, { opacity: 0, y: 24, duration: .35, ease: "power2.in" })
+        .to(philosophyTitle, { ...pose, duration: .85, ease: "power3.inOut", force3D: false }, "-=.12");
+}
+
+// 묶음 자리 위쪽 끝에서 화면 아래 바깥까지의 거리. 여기서 출발해야 올라오기 전엔 안 보인다
+function stageBelowScreenY() {
+    return window.innerHeight - philosophyStage.parentElement.getBoundingClientRect().top;
+}
+
+function showPhilosophyEarly() {
+    section02Step = 2;
+    switching = true;
+
+    if (section02Tl) section02Tl.kill();
+    section02Tl = gsap.timeline({
+        onComplete: () => { switching = false; }
+    });
+    section02Tl
+        .fromTo(philosophyEarly,
+            { opacity: 1, y: stageBelowScreenY() },
+            { y: 0, duration: 1, ease: "power3.inOut" })
+        .to(philosophyStage, { scale: .96, opacity: .5, duration: 1, ease: "power3.inOut" }, "<");
+}
+
+function hidePhilosophyEarly() {
+    section02Step = 1;
+    switching = true;
+
+    if (section02Tl) section02Tl.kill();
+    section02Tl = gsap.timeline({
+        onComplete: () => {
+            gsap.set(philosophyEarly, { opacity: 0, y: 0 });
+            switching = false;
+        }
+    });
+    section02Tl
+        .to(philosophyEarly, { y: stageBelowScreenY(), duration: .9, ease: "power3.inOut" })
+        .to(philosophyStage, { scale: 1, opacity: 1, duration: .9, ease: "power3.inOut" }, "<");
+}
+
+function showPhilosophyFun() {
+    section02Step = 3;
+    switching = true;
+
+    if (section02Tl) section02Tl.kill();
+    section02Tl = gsap.timeline({
+        onComplete: () => { switching = false; }
+    });
+    section02Tl
+        .fromTo(philosophyFun,
+            { opacity: 1, y: stageBelowScreenY() },
+            { y: 0, duration: 1, ease: "power3.inOut" })
+        .to(philosophyEarly, { scale: .96, opacity: .5, duration: 1, ease: "power3.inOut" }, "<");
+}
+
+function hidePhilosophyFun() {
+    section02Step = 2;
+    switching = true;
+
+    if (section02Tl) section02Tl.kill();
+    section02Tl = gsap.timeline({
+        onComplete: () => {
+            gsap.set(philosophyFun, { opacity: 0, y: 0 });
+            switching = false;
+        }
+    });
+    section02Tl
+        .to(philosophyFun, { y: stageBelowScreenY(), duration: .9, ease: "power3.inOut" })
+        .to(philosophyEarly, { scale: 1, opacity: 1, duration: .9, ease: "power3.inOut" }, "<");
+}
+
 function leaveSection01() {
     onSection01 = false;
     switching = true;
@@ -827,11 +1025,266 @@ function leaveSection01() {
         .to(wheelHint, { x: 0, y: 0, scale: 1, force3D: false, duration: 1.15, ease: "power3.inOut" }, "<");
 }
 
+const storySpots = {
+    meet: { left: "2.5%", top: "43.7%", scale: 1 },
+    read: { left: "6.4%", top: "10.3%", scale: 1.28 },
+    choose: { left: "10%", top: "80.7%", scale: 1.55 },
+    habit: { left: "67.3%", top: "9.5%", scale: 1.16 },
+    speak: { left: "64.2%", top: "76.4%", scale: 1.38 }
+};
+
+function bubbleKey(bubble) {
+    return [...bubble.classList].find(name => storySpots[name.slice(7)])?.slice(7);
+}
+
+function placeBubble(bubble, spot, duration) {
+    bubble._storyScale = spot.scale;
+    if (!duration) bubble._storyScaleNow = spot.scale;
+    gsap.to(bubble, {
+        left: spot.left,
+        top: spot.top,
+        duration,
+        ease: "power3.inOut",
+        overwrite: "auto"
+    });
+    if (!storyFloating) gsap.set(bubble, { scale: spot.scale });
+}
+
+const storyRing = ["meet", "habit", "speak", "choose", "read"];
+
+const stories = {
+    meet: {
+        photo: "https://res.littlefox.co.kr/static/layout/global/img/welcome3/img_member.png",
+        age: "초6 (여)",
+        period: "4세부터 8년",
+        video: "https://www.littlefox.co.kr/ko/media/index/cVBtOFhqam9nMGZDNXdqdHFrdFY5MGN5Q0FSYUdUc0JEQjM4ZUJpNzVTc0ZrSTdYN1gwekhkcWdIZUg0cmF6Z0hYUnJGUG1IZlpIdDBQclZNR1dBV0E9PQ==",
+        paragraphs: [
+            "아이들이 리틀팍스를 볼 때는 영어를 공부로 안 느끼고 흥미롭게 느껴서 지속적으로 할 수 있었어요. 아이들이 영어로 표현하고 싶어 하고요.",
+            "기본적으로 그동안 리틀팍스를 많이 봤기 때문에 금방 영어유치원에서, 성장하는 게 보였어요. 그래서 아이도 자신감을 가지고 즐겁게 다녔어요. 1년 다녔는데도 끝날 때는 일취월장해서 영어 쓰기도 잘하고, 아웃풋이 좋으니까 아이도 자신감을 갖더라고요.",
+            "리틀팍스는 아이가 부담도 안 느끼고, 즐겁게 들으면서 공부하니까 학원에서도 시너지가 생기더라고요. 몇 개월 지나면 레벨 업 되고, 또 레벨 업 되고, 이런 식으로 레벨 업 되니까 아이가 자신감을 갖고 할 수 있었던 것 같아요."
+        ]
+    },
+    read: {
+        photo: "https://res.littlefox.co.kr/static/layout/global/img/welcome3/img_member2.png",
+        age: "초5 (남), 7세 (여)",
+        period: "6세,2세부터 6년",
+        video: "https://www.littlefox.co.kr/ko/media/index/UE93MVBFRXdNS2ZYb3lmT01rVmQ2aEFEVUwwTnkxSHd0KzNmSU5tZ01zajBPdUg3RHJvUDZ0Z0I1bGRONzhNYVlsRkdDaXdJMFBibmR6SC9rQ2JGRGc9PQ===",
+        paragraphs: [
+            "진하(첫째)는 정말 리틀팍스를 보면서 한 거라고는 매일 꾸준히 적어도 한 시간 이상은 하루도 거르지 않고 매일 봤던 거 그거 하나였거든요.",
+            "진하는 학원을 다녔다거나 집에서 제가 따로 공부를 시킨다거나 그런 거는 한 번도 없었는데도 불구하고, 영어를 꾸준히 노출해 줬던 게 이 아이한테는 큰 내공이 쌓였던 게 아닌가 생각을 많이 해 봤어요.",
+            "민서는 둘째다 보니까 태어나서 두 살 후반부터 오빠랑 같이 시청을 했어요 … 오히려 진하보다 더 신경을 안 썼는데도 불구하고 민서는 어렸을 때부터 노출을 해서 그런지 발음이라든가 빨아들이는 흡수력이 진하보다 더 좋더라고요.",
+            "얘가 영어 말하기를 한 번도 한 적이 없는데 대답을 하고 있어서 저도 신기했어요 … 그 일이 리틀팍스를 본 지 3-4년 정도 지난 뒤 일이거든요. 역시 말하기는 정말 충분한 리스닝이 된 뒤에 이루어지는 게 스피킹이라는 것을 제가 다시 한번 진하를 통해서 체험했죠."
+        ]
+    },
+    choose: {
+        photo: "https://res.littlefox.co.kr/static/layout/global/img/welcome3/img_member3.png",
+        age: "초3 (남)",
+        period: "5세부터 5년 6개월",
+        video: "https://www.littlefox.co.kr/ko/media/index/dTlhVE11d2RFc2Q3b1RuWmVFSHRNRXJWKzhzL1JQWElsUzhpWk1nUFlib2YyYURHTzZyajVFUXZSMUgvNDZrUlRWRDV4L0JPd1VqSTJleWJQTk5Icnc9PQ==",
+        paragraphs: [
+            "36개월이 정말 중요한 시기라고 생각했어요. 그 안에 최대한 많이 영어에 노출해 주고 사교육은 시키지 않았어요. 어릴 때부터 환경만 만들어 주면 스스로 공부할 것 같아 보였고, 예상대로 지금은 자기 주도 학습을 하는 아이로 가는 거 같아요.",
+            "언어가 학습이 되면 늦는 거 같아요. 아직 아이가 어릴 때, 언어를 '학습'하지 않고 '습득'하는 시기에 놀이로써 배울 수 있지 않을까 생각이 들어요.",
+            "그래서 영어 환경을 만드는 것이 중요한 거 같아요. 영어유치원이나 학원이 아니라 집에서 하루에 1시간 정도만 꾸준히 해도 효과가 있을 거예요."
+        ]
+    },
+    habit: {
+        photo: "https://res.littlefox.co.kr/static/layout/global/img/welcome3/img_member4.png",
+        age: "초5 (여)",
+        period: "5세부터 6년5개월",
+        video: "https://cdn.littlefox.co.kr/media/News/64a4aa48a5d116c896a05347f92e4974c1174ff66641334b5c5b7114aa31cdb6.mp4?20220614114253",
+        paragraphs: [
+            "[학생] 다섯 살 때부터 리틀팍스를 했던 거 같은데 그때는 이걸 영어를 공부한다는 생각보다 재밌는 애니메이션 영상을 본다는 느낌으로 했거든요. 단기간 동안은 많이 느는 게 안 보이는데 장기간 동안 엄청 많이 보고, 엄청 많이 듣고 하면은 정말로 이 표현이 어느 순간 내 것이 되는 걸 느꼈어요.",
+            "[부모] 첫째 때 다 해봤어요. 둘째인 재이 때는 그런 것들이 엄마의 선택이 아닌 아이가 좋아하고 아이가 스스로 즐길 때 시너지 효과가 난다는 것을 알았기 때문에 불안함은 없었어요. … 푸시 하지 않는 어떻게 보면 내버려 둠이 아이의 성장의 밑거름이 됐다고요."
+        ]
+    },
+    speak: {
+        photo: "https://res.littlefox.co.kr/static/layout/global/img/welcome3/img_member5.png",
+        age: "초6 (여)",
+        period: "초3부터 3년",
+        video: "https://cdn.littlefox.co.kr/media/interview/d6205c12bae97126e370a3870f72e4c9be4eff54e04900c4eee5776b5d968c08.mp4?20221101132451",
+        paragraphs: [
+            "[학생] 처음에 볼 때는 ‘Hello’ 그런 것 밖에 몰랐거든요. 그 정도만 알아듣고, 사실상 다 알아듣지는 못했어요. 애니메이션이니까 … 눈으로 보면서도 조금씩 이해하고, 해석도 같이 보면서 다 이해하게 됐던 것 같아요 … Fun at Kids Central에 빠지고 난 다음부터 영어를 엄청 듣게 됐어요.",
+            "고학년이 되고 난 뒤부터 글 쓰는 걸 엄청 좋아했어요. 영어 실력이 4학년, 5학년 그때부터 팍팍 늘었거든요.",
+            "[부모] 리틀팍스 말하기 CLASS가 기능적인 부분들이 추가돼서 저는 너무 좋았어요 … CLASS를 하면서 동화 나오는 성우의 강세, 리듬 패턴이나 이런 것들을 모방하면서 비슷하게 하려고 후천적으로 노력을 하는데 … 그런 것들이 되게 재미있데요.",
+            "아이는 불안하지 않은데 부모는 불안하잖아요. 불안은 내 몫이니 내가 해결을 해야 되니까 벽 보고 숫자 세기도 해보고 … 나가서 걷기 이런 것들 많이 했던 것 같아요."
+        ]
+    }
+};
+
+function stopStoryVideo() {
+    interviewVideo.pause();
+    interviewSource.removeAttribute("src");
+    interviewVideo.load();
+}
+
+function closeStory(animate) {
+    storyWall.classList.remove("is-open");
+    storyBubbles.forEach(bubble => {
+        bubble.classList.remove("is-gone");
+        placeBubble(bubble, storySpots[bubbleKey(bubble)], animate ? .7 : 0);
+    });
+    stopStoryVideo();
+    if (!animate) {
+        storyCard.hidden = true;
+        storyDim.hidden = true;
+        gsap.set([storyCard, storyDim], { opacity: 1, clearProps: "transform" });
+        return;
+    }
+    gsap.to([storyCard, storyDim], {
+        opacity: 0,
+        duration: .25,
+        onComplete: () => {
+            storyCard.hidden = true;
+            storyDim.hidden = true;
+            gsap.set([storyCard, storyDim], { opacity: 1, clearProps: "transform" });
+        }
+    });
+}
+
+function openStory(bubble) {
+    const story = stories[bubbleKey(bubble)];
+    storyRing.forEach((key, index) => {
+        const item = document.querySelector(".bubble-" + key);
+        const nextKey = storyRing[(index + 1) % storyRing.length];
+        item.classList.remove("is-gone");
+        placeBubble(item, storySpots[nextKey], .8);
+    });
+    storyWall.classList.add("is-open");
+    storyCard.setAttribute("aria-label", bubble.dataset.title);
+    storyPhoto.src = story.photo;
+    storyPhoto.alt = bubble.dataset.title;
+    storyMeta.textContent = "ㆍ연령 : " + story.age + "\nㆍ이용기간 : " + story.period;
+    storyCopy.replaceChildren(...story.paragraphs.map(text => {
+        const paragraph = document.createElement("p");
+        paragraph.textContent = text;
+        return paragraph;
+    }));
+    storyCopy.scrollTop = 0;
+    interviewSource.src = story.video;
+    interviewVideo.load();
+    storyCard.hidden = false;
+    storyDim.hidden = false;
+    gsap.fromTo([storyCard, storyDim], { opacity: 0 }, { opacity: 1, duration: .35, ease: "power2.out", overwrite: "auto" });
+}
+
+let storyPointer = { x: -9999, y: -9999, active: false };
+let storyFloating = false;
+
+function floatStories(now = 0) {
+    if (!storyFloating) return;
+    const time = now / 1000;
+    storyBubbles.forEach((bubble, index) => {
+        if (bubble.classList.contains("is-gone")) {
+            gsap.set(bubble, { x: 0, y: 0 });
+            return;
+        }
+        const rect = bubble.getBoundingClientRect();
+        const shiftX = gsap.getProperty(bubble, "x") || 0;
+        const shiftY = gsap.getProperty(bubble, "y") || 0;
+        const centerX = rect.left + rect.width / 2 - shiftX;
+        const centerY = rect.top + rect.height / 2 - shiftY;
+        const dx = centerX - storyPointer.x;
+        const dy = centerY - storyPointer.y;
+        const distance = Math.hypot(dx, dy) || 1;
+        const reach = 240;
+        const near = storyPointer.active && distance < reach ? 1 - distance / reach : 0;
+        const push = near * 54;
+        const targetScale = bubble._storyScale || 1;
+        bubble._storyScaleNow = bubble._storyScaleNow ?? targetScale;
+        bubble._storyScaleNow += (targetScale - bubble._storyScaleNow) * .08;
+        gsap.set(bubble, {
+            x: Math.sin(time * .7 + index) * 12 + (dx / distance) * push + Math.sin(time * 1.7 + index * 2) * 22 * near,
+            y: Math.cos(time * .55 + index * 1.3) * 10 + (dy / distance) * push + Math.cos(time * 1.4 + index) * 16 * near,
+            scale: bubble._storyScaleNow * (1 + Math.sin(time * .9 + index) * .035) * (1 + near * .08)
+        });
+    });
+    requestAnimationFrame(floatStories);
+}
+
+function setStoryFloat(on) {
+    if (on === storyFloating) return;
+    storyFloating = on;
+    if (on) requestAnimationFrame(floatStories);
+    else storyBubbles.forEach(bubble => gsap.set(bubble, { x: 0, y: 0, scale: bubble._storyScale || 1 }));
+}
+
+section03.addEventListener("pointermove", event => {
+    storyPointer.x = event.clientX;
+    storyPointer.y = event.clientY;
+    storyPointer.active = true;
+});
+section03.addEventListener("pointerleave", () => { storyPointer.active = false; });
+
+function enterSection03() {
+    onSection03 = true;
+    onSection02 = false;
+    switching = true;
+    closeStory(false);
+    gsap.set(section03, { visibility: "visible" });
+    setStoryFloat(true);
+
+    if (section03Tl) section03Tl.kill();
+    section03Tl = gsap.timeline({
+        onComplete: () => { switching = false; }
+    });
+    section03Tl
+        .to(section02, { opacity: 0, duration: .4, ease: "power2.in" })
+        .fromTo(section03, { opacity: 0 }, { opacity: 1, duration: .55, ease: "power2.out" }, "-=.1");
+}
+
+function leaveSection03() {
+    onSection03 = false;
+    onSection02 = true;
+    switching = true;
+    closeStory(false);
+    setStoryFloat(false);
+
+    if (section03Tl) section03Tl.kill();
+    section03Tl = gsap.timeline({
+        onComplete: () => {
+            gsap.set(section03, { visibility: "hidden" });
+            switching = false;
+        }
+    });
+    section03Tl
+        .to(section03, { opacity: 0, duration: .35 })
+        .to(section02, { opacity: 1, duration: .45, ease: "power2.out" }, "-=.1");
+}
+
 function changeChannel(dir) {
-    if (!introDone || switching) return;
+    if (!introDone || switching || !storyCard.hidden) return;
+
+    if (onSection03) {
+        if (dir < 0) leaveSection03();
+        return;
+    }
+
+    if (onSection02) {
+        if (dir > 0) {
+            if (section02Step === 3) {
+                enterSection03();
+                return;
+            }
+            const next = [showPhilosophyDetail, showPhilosophyEarly, showPhilosophyFun][section02Step];
+            if (next) next();
+        } else if (section02Step === 3) {
+            hidePhilosophyFun();
+        } else if (section02Step === 2) {
+            hidePhilosophyEarly();
+        } else if (section02Step === 1) {
+            hidePhilosophyDetail();
+        } else {
+            leaveSection02();
+        }
+        return;
+    }
 
     if (onSection01) {
         if (dir > 0) {
+            if (sectionStep === 8) {
+                enterSection02();
+                return;
+            }
             const next = [showSectionMessage, showKoreaMessage, showListening, showReading, showSpeaking, showWriting, showYear, showYearCount][sectionStep];
             if (next) next();
         } else {
@@ -898,6 +1351,11 @@ function changeChannel(dir) {
 }
 
 remoteNext.addEventListener("click", () => changeChannel(1));
+storyBubbles.forEach(bubble => bubble.addEventListener("click", () => openStory(bubble)));
+storyClose.addEventListener("click", () => closeStory(true));
+storyDim.addEventListener("click", () => closeStory(true));
+storyCard.addEventListener("wheel", e => e.stopPropagation(), { passive: true });
+storyCopy.addEventListener("touchend", e => e.stopPropagation());
 
 window.addEventListener("wheel", e => {
     if (Math.abs(e.deltaY) < 8) return;
@@ -981,7 +1439,6 @@ resizeNoise();
 window.addEventListener("load", () => {
     requestAnimationFrame(() => requestAnimationFrame(playIntro));
 });
-
 
 let resizeTimer;
 window.addEventListener("resize", () => {
