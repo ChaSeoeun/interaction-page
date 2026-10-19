@@ -1,7 +1,7 @@
 * { box-sizing: border-box; }
 
 /* 커서 이미지는 128px 넘으면 무시됨. 12 2 = 클릭 지점(왼쪽 귀 끝) */
-html, body, button {
+html, body, button, a {
     cursor: url("./images/cursor-custom-48.png") 12 2, auto;
 }
 
@@ -737,9 +737,12 @@ html, body {
 /* 앞 화면 휠은 36~64px(3.6vw) 상자. 원본 1243x1266 중 아이콘은 554x784라 그 비율만 남긴다 */
 .philosophy-wheel {
     --wheel-box: min(64px, max(36px, 3.6vw));
-    position: absolute;
+    position: fixed;
+    z-index: 80;
     right: 1.4vw;
     top: 50%;
+    opacity: 0;
+    visibility: hidden;
     width: 2.5vw;
     width: calc(var(--wheel-box) * 554 / 1243);
     aspect-ratio: 554 / 784;
@@ -839,13 +842,22 @@ html, body {
     padding: 6vh 4vw 5vh;
 }
 
-.stories-title {
+.stories-head {
     position: absolute;
     left: 50%;
     top: 50%;
     z-index: 3;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3.2vh;
     width: max-content;
     max-width: 42vw;
+    pointer-events: none;
+    translate: -50% -50%;
+}
+
+.stories-title {
     margin: 0;
     font-size: 4.6vw;
     font-weight: 900;
@@ -853,8 +865,38 @@ html, body {
     letter-spacing: -0.05em;
     text-align: center;
     color: #243056;
-    pointer-events: none;
-    translate: -50% -50%;
+}
+
+.stories-more {
+    display: inline-flex;
+    align-items: center;
+    gap: .7vw;
+    padding: 1.05vw 2.2vw;
+    border-radius: 999px;
+    background: #243056;
+    color: #fff;
+    font-size: 1.15vw;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    text-decoration: none;
+    box-shadow: 0 .8vw 2vw rgba(36, 48, 86, .22);
+    pointer-events: auto;
+    transition: background-color .25s ease, transform .25s ease;
+}
+
+.stories-more svg {
+    width: 1.25vw;
+    height: 1.25vw;
+    transition: transform .25s ease;
+}
+
+.stories-more:hover {
+    background: #32427a;
+    transform: translateY(-2px);
+}
+
+.stories-more:hover svg {
+    transform: translateX(4px);
 }
 
 .story-wall {
@@ -1023,7 +1065,9 @@ html, body {
 
 .story-copy {
     flex: 4 1 0;
+    min-width: 0;
     min-height: 0;
+    overflow-x: hidden;
     overflow-y: auto;
     overscroll-behavior: contain;
     padding-right: .4vw;
@@ -1049,4 +1093,608 @@ html, body {
 .story-copy::-webkit-scrollbar-thumb {
     border-radius: 999px;
     background: #c5ceda;
+}
+
+/* 회원 활용수기. 공책 안쪽 크기는 모두 책 너비(cqw) 기준 */
+.section04 {
+    position: fixed;
+    inset: 0;
+    z-index: 65;
+    overflow: hidden;
+    background:
+        radial-gradient(circle at 12% 18%, rgba(214, 232, 255, .55), transparent 28%),
+        radial-gradient(circle at 88% 82%, rgba(255, 233, 214, .5), transparent 30%),
+        #f8f5ef;
+    visibility: hidden;
+}
+
+.user-note {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.8vh;
+}
+
+.user-note-heading {
+    text-align: center;
+}
+
+.user-note-title {
+    margin: 0;
+    font-size: 2.4vw;
+    font-weight: 900;
+    line-height: 1.2;
+    letter-spacing: -0.045em;
+    color: #1d2a4a;
+}
+
+.user-note-subtitle {
+    margin: .6vh 0 0;
+    font-size: 1vw;
+    font-weight: 500;
+    letter-spacing: -0.03em;
+    color: #5a6378;
+}
+
+.user-note-book {
+    --line: 2.6cqw;
+    --paper: #fffdf7;
+    position: relative;
+    width: min(74vw, 126vh);
+    aspect-ratio: 1.62;
+    container-type: inline-size;
+    transform: translateX(-25%);
+}
+
+/* 판과 표지는 책 반쪽 크기. 펼치면 표지가 왼쪽 판이 된다 */
+.user-note-back-cover,
+.user-note-cover {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 50%;
+    height: 100%;
+}
+
+.user-note-back-cover {
+    z-index: 1;
+    border-radius: 0 1.6cqw 1.6cqw 0;
+    background: linear-gradient(135deg, #5b9be3, #3f7cc6);
+    box-shadow: 0 2cqw 4cqw rgba(30, 60, 110, .25);
+}
+
+.user-note-cover {
+    z-index: 5;
+    transform-style: preserve-3d;
+    transform-origin: left center;
+}
+
+.user-note-cover-front,
+.user-note-cover-back {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+}
+
+.user-note-cover-front {
+    overflow: hidden;
+    border-radius: 0 1.6cqw 1.6cqw 0;
+    background:
+        repeating-linear-gradient(45deg, rgba(255, 255, 255, .05) 0 2px, transparent 2px 5px),
+        repeating-linear-gradient(-45deg, rgba(0, 0, 0, .05) 0 2px, transparent 2px 5px),
+        linear-gradient(135deg, #5b9be3, #3f7cc6);
+    box-shadow: 0 2cqw 4cqw rgba(30, 60, 110, .28), inset 0 0 0 1px rgba(255, 255, 255, .12);
+}
+
+/* 바느질 테두리 */
+.user-note-cover-front::before {
+    content: "";
+    position: absolute;
+    inset: 2.2cqw 2.2cqw 2.2cqw 4.4cqw;
+    border: 2px dashed rgba(255, 255, 255, .45);
+    border-radius: 1.2cqw;
+    pointer-events: none;
+}
+
+/* 고무줄 밴드 */
+.user-note-cover-front::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 7%;
+    width: 1.8cqw;
+    background: linear-gradient(to right, #2c5c9c, #3a6fb4 50%, #2c5c9c);
+    box-shadow: 0 0 .6cqw rgba(0, 0, 0, .25);
+    pointer-events: none;
+}
+
+.user-note-cover-back {
+    transform: rotateY(180deg);
+    border-radius: 1.6cqw 0 0 1.6cqw;
+    background: linear-gradient(225deg, #5b9be3, #3f7cc6);
+    box-shadow: 0 2cqw 4cqw rgba(30, 60, 110, .25);
+}
+
+.user-note-open {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.6cqw;
+    padding: 0 6cqw 0 7cqw;
+    border: 0;
+    background: transparent;
+    color: #fff;
+    text-align: center;
+}
+
+.user-note-cover-logo {
+    display: block;
+    width: 30cqw;
+    height: auto;
+    margin-bottom: 1.2cqw;
+    mix-blend-mode: screen;
+    pointer-events: none;
+}
+
+.user-note-cover-title {
+    font-size: 3.6cqw;
+    font-weight: 900;
+    line-height: 1.25;
+    letter-spacing: -0.04em;
+    text-shadow: 0 .3cqw .8cqw rgba(20, 50, 100, .3);
+}
+
+.user-note-cover-hint {
+    margin-top: 1.6cqw;
+    padding: .9cqw 2cqw;
+    border: 1px solid rgba(255, 255, 255, .45);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, .16);
+    font-size: 1.3cqw;
+    font-weight: 700;
+    animation: note-hint-bob 1.6s ease-in-out infinite;
+}
+
+@keyframes note-hint-bob {
+    0%, 100% { translate: 0 0; }
+    50%      { translate: 0 -.5cqw; }
+}
+
+.user-note-content {
+    position: absolute;
+    inset: 2.4% 1.6%;
+    z-index: 3;
+}
+
+.user-note-content[hidden] {
+    display: none;
+}
+
+.user-note-spread {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    height: 100%;
+}
+
+/* 종이. 줄 간격(--line)에 본문 줄높이를 맞춰 글자가 줄 위에 앉는다 */
+.user-note-page {
+    position: relative;
+    min-width: 0;
+    background:
+        repeating-linear-gradient(to bottom, transparent 0 calc(var(--line) - 1px), rgba(120, 145, 180, .16) calc(var(--line) - 1px) var(--line)),
+        var(--paper);
+}
+
+.user-note-page--left {
+    border-radius: 1cqw 0 0 1cqw;
+    box-shadow: inset -2.4cqw 0 2.4cqw -2cqw rgba(80, 60, 30, .18), -.3cqw 0 0 #efe8da, -.6cqw 0 0 #e4dccb;
+}
+
+.user-note-page--right {
+    border-radius: 0 1cqw 1cqw 0;
+    box-shadow: inset 2.4cqw 0 2.4cqw -2cqw rgba(80, 60, 30, .18), .3cqw 0 0 #efe8da, .6cqw 0 0 #e4dccb;
+}
+
+.user-note-page-inner {
+    position: relative;
+    height: 100%;
+}
+
+.user-note-page--left .user-note-page-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3cqw 4cqw 3cqw 3cqw;
+    text-align: center;
+}
+
+.user-note-photo {
+    display: block;
+    flex: none;
+    width: 5cqw;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    object-fit: cover;
+    background: var(--note-avatar);
+    box-shadow: 0 0 0 .5cqw #fff, 0 .8cqw 1.6cqw rgba(40, 60, 100, .14);
+}
+
+.user-note-meta {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: .2cqw 1.2cqw;
+    margin: 2cqw 0 0;
+    padding: .6cqw 1.8cqw;
+    border-radius: 999px;
+    background: var(--note-soft);
+    font-size: 1.2cqw;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    color: #3b4a66;
+}
+
+.user-note-story-title {
+    max-width: 32cqw;
+    margin: 1.6cqw 0 0;
+    font-family: "Gaegu", "Pretendard", sans-serif;
+    font-size: 3.4cqw;
+    font-weight: 700;
+    line-height: 1.12;
+    letter-spacing: -0.02em;
+    color: #1d2740;
+    text-wrap: balance;
+    word-break: keep-all;
+}
+
+.user-note-squiggle {
+    width: 20cqw;
+    margin-top: -.4cqw;
+    fill: none;
+    stroke: var(--note-accent);
+    stroke-width: 5;
+    stroke-linecap: round;
+    opacity: .45;
+}
+
+.user-note-caption {
+    display: flex;
+    align-items: center;
+    gap: 1cqw;
+    margin: 1.4cqw 0 0;
+    font-size: 1.2cqw;
+    font-weight: 600;
+    color: #8a8f9c;
+}
+
+.user-note-caption::before,
+.user-note-caption::after {
+    content: "";
+    width: 2.2cqw;
+    height: 1px;
+    background: currentColor;
+}
+
+/* 문단 간격은 줄 간격과 같다. 위쪽 시작 위치는 본문 길이에 맞춰 가운데로 옮긴다 */
+.user-note-page--right .user-note-page-inner {
+    display: flex;
+    flex-direction: column;
+    padding: var(--line) 5cqw 2.2cqw 4.2cqw;
+}
+
+.user-note-story-body {
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    font-size: 1.16cqw;
+    font-weight: 500;
+    line-height: var(--line);
+    letter-spacing: -0.03em;
+    color: #3d4454;
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+    scrollbar-width: thin;
+}
+
+.user-note-story-body p {
+    margin: 0;
+}
+
+.user-note-story-body p + p {
+    margin-top: var(--line);
+}
+
+/* 오른쪽 아래 접힌 모서리 자리는 비워 둔다 */
+.user-note-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2cqw;
+    padding: 1.4cqw 3.6cqw 0 0;
+}
+
+.user-note-highlight {
+    padding: 0 .3em;
+    border-radius: .4em;
+    background: linear-gradient(transparent 18%, var(--note-soft) 18% 88%, transparent 88%);
+    color: inherit;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+}
+
+.user-note-story-link {
+    display: inline-flex;
+    gap: .6cqw;
+    font-size: 1.25cqw;
+    font-weight: 700;
+    line-height: 1.6;
+    color: var(--note-accent);
+    text-decoration: none;
+    border-bottom: 2px solid currentColor;
+}
+
+.user-note-story-link span {
+    transition: transform .25s ease;
+}
+
+.user-note-story-link:hover span {
+    transform: translateX(4px);
+}
+
+.user-note-nav {
+    display: flex;
+    align-items: center;
+    gap: 1.6cqw;
+}
+
+.user-note-prev,
+.user-note-next {
+    display: grid;
+    place-items: center;
+    width: 3.2cqw;
+    height: 3.2cqw;
+    padding: 0;
+    border: 1px solid #e3e6ee;
+    border-radius: 50%;
+    background: #fff;
+    color: var(--note-accent);
+    box-shadow: 0 .4cqw 1cqw rgba(40, 60, 100, .1);
+    transition: transform .2s ease, opacity .2s ease;
+}
+
+.user-note-prev:hover:not(:disabled),
+.user-note-next:hover:not(:disabled) {
+    transform: scale(1.08);
+}
+
+.user-note-prev:disabled,
+.user-note-next:disabled {
+    opacity: .35;
+}
+
+.user-note-prev svg,
+.user-note-next svg {
+    width: 1.6cqw;
+    height: 1.6cqw;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.user-note-pagination {
+    margin: 0;
+    font-size: 1.15cqw;
+    font-weight: 600;
+    color: #8a90a0;
+}
+
+.user-note-current {
+    font-size: 1.8cqw;
+    font-weight: 800;
+    color: var(--note-accent);
+}
+
+/* 접힌 모서리. 오른쪽 아래 삼각형은 아래 장, 왼쪽 위 삼각형은 접힌 뒷면 */
+.user-note-corner {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 6.4cqw;
+    height: 6.4cqw;
+    padding: 0;
+    border: 0;
+    border-radius: 0 0 1cqw 0;
+    background: linear-gradient(to top left, #ebe3d2 0 50%, transparent 50%);
+    transition: width .25s ease, height .25s ease;
+}
+
+.user-note-corner[hidden] {
+    display: none;
+}
+
+.user-note-corner:hover {
+    width: 7.6cqw;
+    height: 7.6cqw;
+}
+
+.user-note-corner-fold {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom right, #fffdf7 0, #efe6d4 50%, transparent 50%);
+    filter: drop-shadow(-.3cqw -.3cqw .4cqw rgba(80, 60, 30, .18));
+}
+
+.user-note-gutter {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 6cqw;
+    translate: -50% 0;
+    background: linear-gradient(to right, transparent, rgba(70, 50, 20, .1) 42%, rgba(70, 50, 20, .2) 50%, rgba(70, 50, 20, .1) 58%, transparent);
+    pointer-events: none;
+}
+
+.user-note-close {
+    position: absolute;
+    top: 1.6cqw;
+    right: 1.8cqw;
+    width: 2.8cqw;
+    height: 2.8cqw;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(35, 54, 94, .08);
+    color: #59627a;
+    font-size: 2cqw;
+    line-height: 1;
+}
+
+.user-note-close:hover {
+    background: rgba(35, 54, 94, .16);
+}
+
+/* 넘기는 종이는 본문과 같은 자리에 겹친다 */
+.user-note-flip-pages {
+    position: absolute;
+    inset: 2.4% 1.6%;
+    z-index: 4;
+    pointer-events: none;
+}
+
+.user-note-flip-hold,
+.user-note-flip-page {
+    position: absolute;
+    top: 0;
+    width: 50%;
+    height: 100%;
+    visibility: hidden;
+}
+
+.user-note-flip-hold {
+    z-index: 0;
+}
+
+.user-note-flip-page {
+    transform-style: preserve-3d;
+}
+
+.user-note-flip-front,
+.user-note-flip-back {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    backface-visibility: hidden;
+    background:
+        repeating-linear-gradient(to bottom, transparent 0 calc(var(--line) - 1px), rgba(120, 145, 180, .16) calc(var(--line) - 1px) var(--line)),
+        var(--paper);
+    box-shadow: 0 0 1.2cqw rgba(60, 40, 20, .12);
+}
+
+.user-note-flip-back {
+    transform: rotateY(180deg);
+}
+
+.user-note-flip-hold > .user-note-page,
+.user-note-flip-front > .user-note-page,
+.user-note-flip-back > .user-note-page {
+    position: absolute;
+    inset: 0;
+}
+
+.user-note-spine {
+    position: absolute;
+    top: 3%;
+    left: 50%;
+    z-index: 7;
+    width: 5.6cqw;
+    height: 94%;
+    translate: -50% 0;
+    pointer-events: none;
+}
+
+.user-note-spine svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 .2cqw .2cqw rgba(0, 0, 0, .18));
+}
+
+/* 탭은 판 뒤에 꽂혀 바깥으로 튀어나온 부분만 보인다 */
+.user-note-tabs {
+    position: absolute;
+    top: 7%;
+    left: calc(100% - 1.6cqw);
+    z-index: 0;
+    display: flex;
+    flex-direction: column;
+    gap: .8cqw;
+}
+
+.user-note-tab {
+    width: 6.4cqw;
+    height: 8.4cqw;
+    padding: 0 0 0 1.6cqw;
+    border: 0;
+    border-radius: 0 1.2cqw 1.2cqw 0;
+    background: var(--tab);
+    color: #2b3a55;
+    font-size: 1.6cqw;
+    font-weight: 800;
+    box-shadow: .3cqw .4cqw 1cqw rgba(40, 60, 100, .14);
+    transition: transform .3s ease, filter .3s ease;
+    filter: saturate(.75);
+}
+
+.user-note-tab:nth-child(1) { --tab: #8cc3f5; }
+.user-note-tab:nth-child(2) { --tab: #9edbc0; }
+.user-note-tab:nth-child(3) { --tab: #f6a9a9; }
+.user-note-tab:nth-child(4) { --tab: #f7da80; }
+.user-note-tab:nth-child(5) { --tab: #c6b4ef; }
+
+.user-note-tab:hover {
+    transform: translateX(.5cqw);
+}
+
+.user-note-tab.is-active {
+    transform: translateX(1cqw);
+    filter: none;
+}
+
+.user-note-pencil {
+    position: absolute;
+    top: 12%;
+    left: calc(100% + 7.6cqw);
+    width: 3.2cqw;
+    height: auto;
+    rotate: 6deg;
+    filter: drop-shadow(.4cqw .6cqw .6cqw rgba(30, 50, 90, .22));
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.user-note-guide {
+    display: flex;
+    align-items: center;
+    gap: .5vw;
+    margin: 0;
+    font-size: 1vw;
+    font-weight: 500;
+    letter-spacing: -0.03em;
+    color: #5a6275;
+    opacity: 0;
+    visibility: hidden;
 }

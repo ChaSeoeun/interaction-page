@@ -25,9 +25,12 @@ const yearInner = document.querySelector(".year-inner");
 const yearNum = document.querySelector(".year-num");
 const yearCopy = document.querySelector(".year-copy");
 const section02 = document.querySelector(".section02");
+const philosophy = document.querySelector(".philosophy");
+const philosophyWheel = document.querySelector(".philosophy-wheel");
 const philosophyTitle = document.querySelector(".philosophy-title");
 const [philosophyStage, philosophyEarly, philosophyFun] = document.querySelectorAll(".philosophy-stage");
 const section03 = document.querySelector(".section03");
+const storiesStage = document.querySelector(".stories");
 const storyWall = document.querySelector(".story-wall");
 const storyBubbles = document.querySelectorAll(".bubble");
 const storyCard = document.querySelector(".story-card");
@@ -38,6 +41,28 @@ const interviewVideo = document.querySelector(".story-video video");
 const interviewSource = interviewVideo.querySelector("source");
 const storyCopy = document.querySelector(".story-copy");
 const storyClose = document.querySelector(".story-close");
+const section04 = document.querySelector(".section04");
+const noteBook = document.querySelector(".user-note-book");
+const noteContent = document.querySelector(".user-note-content");
+const [notePageLeft, notePageRight] = noteContent.querySelectorAll(".user-note-page");
+const noteMeta = document.querySelector(".user-note-meta");
+const noteTitle = document.querySelector(".user-note-story-title");
+const notePhoto = document.querySelector(".user-note-photo");
+const noteBody = document.querySelector(".user-note-story-body");
+const noteLink = document.querySelector(".user-note-story-link");
+const noteCurrent = document.querySelector(".user-note-current");
+const noteTotal = document.querySelector(".user-note-total");
+const notePrev = document.querySelector(".user-note-prev");
+const noteNext = document.querySelector(".user-note-next");
+const noteCorner = document.querySelector(".user-note-corner");
+const noteClose = document.querySelector(".user-note-close");
+const noteTabs = document.querySelectorAll(".user-note-tab");
+const noteHold = document.querySelector(".user-note-flip-hold");
+const noteFlips = document.querySelectorAll(".user-note-flip-page");
+const noteCover = document.querySelector(".user-note-cover");
+const noteOpen = document.querySelector(".user-note-open");
+const notePencil = document.querySelector(".user-note-pencil");
+const noteGuide = document.querySelector(".user-note-guide");
 const remote = document.querySelector(".remote");
 const wheelHint = document.querySelector(".wheel-hint");
 const remoteNext = document.querySelector(".remote-next");
@@ -80,6 +105,10 @@ let sectionStep = 0;
 let onSection02 = false;
 let onSection03 = false;
 let section03Tl = null;
+let onSection04 = false;
+let section04Tl = null;
+let noteTl = null;
+let noteIndex = 0;
 // section02 단계: 0 큰 제목, 1 듣기부터, 2 가능한 일찍, 3 쉽고 재미있게
 let section02Step = 0;
 let section02Tl = null;
@@ -227,8 +256,10 @@ function resetIntro() {
         section02Tl.kill();
         section02Tl = null;
     }
-    gsap.killTweensOf([section02, philosophyTitle, philosophyStage, philosophyEarly, philosophyFun]);
+    gsap.killTweensOf([section02, philosophy, philosophyWheel, philosophyTitle, philosophyStage, philosophyEarly, philosophyFun]);
     gsap.set(section02, { opacity: 0, visibility: "hidden" });
+    gsap.set(philosophy, { scale: 1, opacity: 1 });
+    gsap.set(philosophyWheel, { opacity: 0, visibility: "hidden" });
     gsap.set(philosophyTitle, { x: 0, y: 0, scale: 1, opacity: 1 });
     gsap.set(philosophyStage, { opacity: 0, y: 36, scale: 1 });
     gsap.set([philosophyEarly, philosophyFun], { opacity: 0, y: 0, scale: 1 });
@@ -241,7 +272,16 @@ function resetIntro() {
     closeStory(false);
     setStoryFloat(false);
     gsap.killTweensOf(section03);
-    gsap.set(section03, { opacity: 0, visibility: "hidden" });
+    gsap.set(section03, { opacity: 0, visibility: "hidden", yPercent: 0 });
+    gsap.set(storiesStage, { scale: 1, opacity: 1 });
+
+    onSection04 = false;
+    if (section04Tl) {
+        section04Tl.kill();
+        section04Tl = null;
+    }
+    gsap.set(section04, { visibility: "hidden", yPercent: 0 });
+    resetBook();
 
     gsap.set(fullscreenNoise, {
         display: "none",
@@ -865,6 +905,7 @@ function enterSection02() {
     switching = true;
 
     gsap.set(section02, { visibility: "visible", opacity: 0 });
+    gsap.set(philosophyWheel, { visibility: "visible", opacity: 0 });
     gsap.set(philosophyTitle, { x: 0, y: 0, scale: 1, opacity: 1 });
     gsap.set(philosophyStage, { opacity: 0, y: 36, scale: 1 });
     gsap.set([philosophyEarly, philosophyFun], { opacity: 0, y: 0, scale: 1 });
@@ -877,6 +918,7 @@ function enterSection02() {
     section02Tl
         .to(section01, { opacity: 0, duration: .4, ease: "power2.in" })
         .to(section02, { opacity: 1, duration: .55, ease: "power2.out" }, "-=.12")
+        .to(philosophyWheel, { opacity: 1, duration: .55, ease: "power2.out" }, "<")
         .fromTo(philosophyTitle,
             { ...pose, opacity: 0, y: pose.y + 26, force3D: false },
             { ...pose, opacity: 1, duration: .7, ease: "power2.out", force3D: false }, "<");
@@ -890,6 +932,7 @@ function leaveSection02() {
     section02Tl = gsap.timeline({
         onComplete: () => {
             gsap.set(section02, { visibility: "hidden" });
+            gsap.set(philosophyWheel, { visibility: "hidden" });
             gsap.set(philosophyTitle, { x: 0, y: 0, scale: 1, opacity: 1 });
             switching = false;
         }
@@ -897,6 +940,7 @@ function leaveSection02() {
     section02Tl
         .to(philosophyTitle, { opacity: 0, duration: .25 })
         .to(section02, { opacity: 0, duration: .35 }, "<")
+        .to(philosophyWheel, { opacity: 0, duration: .35 }, "<")
         .to(section01, { opacity: 1, duration: .45, ease: "power2.out" }, "-=.1");
 }
 
@@ -1220,16 +1264,17 @@ function enterSection03() {
     onSection02 = false;
     switching = true;
     closeStory(false);
-    gsap.set(section03, { visibility: "visible" });
     setStoryFloat(true);
-
     if (section03Tl) section03Tl.kill();
+    gsap.set(section03, { visibility: "visible", opacity: 1, yPercent: 100 });
+
     section03Tl = gsap.timeline({
         onComplete: () => { switching = false; }
     });
+    // 내용 묶음처럼 아래에서 올라와 앞 화면을 덮고, 덮이는 쪽은 살짝 멀어진다
     section03Tl
-        .to(section02, { opacity: 0, duration: .4, ease: "power2.in" })
-        .fromTo(section03, { opacity: 0 }, { opacity: 1, duration: .55, ease: "power2.out" }, "-=.1");
+        .to(section03, { yPercent: 0, duration: 1, ease: "power3.inOut" })
+        .to(philosophy, { scale: .96, opacity: .5, duration: 1, ease: "power3.inOut" }, "<");
 }
 
 function leaveSection03() {
@@ -1238,24 +1283,347 @@ function leaveSection03() {
     switching = true;
     closeStory(false);
     setStoryFloat(false);
-
     if (section03Tl) section03Tl.kill();
+
     section03Tl = gsap.timeline({
         onComplete: () => {
-            gsap.set(section03, { visibility: "hidden" });
+            gsap.set(section03, { visibility: "hidden", yPercent: 0 });
+            gsap.set(philosophy, { scale: 1, opacity: 1 });
             switching = false;
         }
     });
     section03Tl
-        .to(section03, { opacity: 0, duration: .35 })
-        .to(section02, { opacity: 1, duration: .45, ease: "power2.out" }, "-=.1");
+        .to(section03, { yPercent: 100, duration: .9, ease: "power3.inOut" })
+        .to(philosophy, { scale: 1, opacity: 1, duration: .9, ease: "power3.inOut" }, "<");
+}
+
+// ---------- section04 ----------
+
+// 문단은 배열, { mark }는 형광펜. image는 왼쪽 원 안에 들어갈 그림
+const userNotes = [
+    {
+        theme: { accent: "#3d8be0", soft: "#d6e8fc", avatar: "#dcebfb" },
+        image: "https://res.littlefox.co.kr/static/layout/global/img/welcome3/img_chr1.png",
+        age: "초3 (여)",
+        period: "6세부터 5년",
+        title: "리틀팍스와 친구가 된 아이 ♡",
+        body: [
+            ["초등학교 1학년 들어가면서 영어 학원에 정식 등록을 하고 아이에겐 리틀팍스는 잠시 쉬어가는 게 어떻겠냐고 제안을 했어요. 근데 이번에도 아이는 절대 안 된다면서 ", { mark: "자기 생일 선물로 리틀팍스 구독을 해달라고 하더라고요." }],
+            ["아이가 영어학원에서도 … 2학년인데도 불구하고 4,5학년 누나 형들과 수업을 하고 있었고 대회에 나가서는 형 누나들을 제치고 혼자서 1등급을 받았습니다. 전 이 모든 게 ", { mark: "리틀팍스를 통해 흘려듣기부터 시작된 단단한 기초가 있어서 가능했다" }, "고 생각합니다."],
+            ["리틀팍스 하는 시간만큼은 자유롭게 아이가 보고 싶은 거 보고 하고 싶은 거 하면서 쉬는 시간 즐기는 시간으로 활용하면 너무 좋겠다 싶어서 ", { mark: "리틀팍스는 공부가 아닌 놀이다 라고 항상 접근을 했어요" }, ". 저희가 마치 티비로 드라마나 예능 보는 것처럼 말이죠 ^^"]
+        ],
+        link: "https://www.littlefox.co.kr/ko/testimonials_forum/bbs_view/1346236/1/1/N/null/null/N/"
+    },
+    {
+        theme: { accent: "#2f9e73", soft: "#d3f1e3", avatar: "#dcf3e8" },
+        image: "https://res.littlefox.co.kr/static/layout/global/img/welcome3/img_chr2.png",
+        age: "중3 (남)",
+        period: "초2부터 6년 8개월",
+        title: "리팍 덕분에! (리팍에 대한 고마움)",
+        body: [
+            ["제가 영어 전공자임에도 아이들 영어는 손도 대지 못하고 어영부영 시간을 보냈습니다. 초등 2학년이 되어 아이들은 준비 없이 치른 학교 영어 시험에서 보기 좋게 28점, 34점으로 최하위 점수를 받았습니다."],
+            ["그때부터 시작된 리팍은 … 엄마인 제가 보고 들어도 너무 재미있어 … ", { mark: "아이들과 함께 초창기에는 하루 2-3시간씩 보는 일이 많았습니다." }, " 모든 단계별로 동화가 있어 단계적으로 보다 보면 ", { mark: "어느새 입에서 영어가 나오는 신기한 경험을 했습니다." }, " … 리팍 동화를 이용해 책도 만들어 읽기 연습도 많이 했습니다. ", { mark: "자연스럽게 영어책을 읽을 수 있게 되었습니다." }],
+            ["조금 아쉬운 것은 6-7세쯤 리팍을 좀 더 일찍 알았더라면 입니다 … 리팍을 아이들이 좋아하기만 하면 효과는 서서히 나타날 것이니 ", { mark: "너무 조급해 하지 마셔요." }, " 아이들에게 ", { mark: "당근을 주시면서" }, " 리팍을 접하게 해 주시면 더 좋고요."]
+        ],
+        link: "https://www.littlefox.co.kr/ko/testimonials_forum/bbs_view/1315099/1/1/N/null/null/N/N"
+    },
+    {
+        theme: { accent: "#e0606a", soft: "#fde0e0", avatar: "#fde7e5" },
+        image: "https://res.littlefox.co.kr/static/layout/global/img/welcome3/img_chr3.png",
+        age: "초5 (남)",
+        period: "7세부터 5년 8개월",
+        title: "슬기로운 영어습득",
+        body: [
+            ["[학생] 처음에 엄마가 Bat and Friends를 틀어주셨을 때 ", { mark: "무슨말 인지 하나도 알아들을 수는 없었지만 내용이 너무 재미있어서 계속 봤어요." }],
+            ["1학년 때 가족이 제주도 여행 갔을 때부터 제가 의도하지 않았는데 리틀팍스에서 봤던 문장들을 내뱉기 시작했고 … 제가 외워야겠다 생각하거나 노력하지 않았는데 ", { mark: "반복해서 보다 보니까 저절로 외워지고, 일상생활에서도 동화 속에서 봤던 상황이 생기면 제가 영어로 말하게 되었어요." }],
+            ["2학년 2학기에 학교 방과 후 영어 선생님과 영어 대화가 가능했고 … 4학년 겨울에는 원어민 선생님과의 대화로 … 30분 넘게 막힘없이 대화할 수 있었고 … 가끔 애니메이션 영화나 미국 드라마 볼 때 엄마가 못 알아들으면 저한테 물어보세요."]
+        ],
+        link: "https://www.littlefox.co.kr/ko/testimonials_forum/bbs_view/1323670/1/1/N/null/null/N/N"
+    },
+    {
+        theme: { accent: "#d4920f", soft: "#fcefc6", avatar: "#fdf3d5" },
+        image: "https://res.littlefox.co.kr/static/layout/global/img/welcome3/img_chr4.png",
+        age: "초2 (남), 7세 (남)",
+        period: "6세, 4세부터 4년",
+        title: "임금님 귀는 당나귀귀!!! 소문내고 싶은 리틀팍스~",
+        body: [
+            ["영어를 어떻게 할까 고민하는 친구 엄마들을 만나면, \"우리 집은 리틀팍스를 하고 있다.\"라고 꼭 말합니다. 리틀팍스가 왜 좋은지, 어떻게 활용하면 좋은지, 우리 아이들은 얼마나 실력이 늘고 있는지, 구구절절 이야기하고 싶지만 .. ", { mark: "대나무 숲에 가서 \"리틀팍스 꼭! 하세요!! 우리 애들 리틀팍스만 했는데, 영어 실력 좋아요!!\"라고 소리치고 싶은 심정입니다." }],
+            ["중고등학교에서는 시험도 쳐야 하고, 대학 입시도 치야 하므로, 나중에는 영어도 공부로 생각하게 될 날이 있겠지만, ", { mark: "아직 우리 아이들은 영어를 공부로 생각하지 않습니다." }, " 학원에서 배우거나 문제집을 풀면서 접하는 것이 아니고, ", { mark: "재미있는 스토리가 있는 만화로 접하기 때문입니다." }]
+        ],
+        link: "https://www.littlefox.co.kr/ko/testimonials_forum/bbs_view/1291024/1/1/N/null/null/N/"
+    },
+    {
+        theme: { accent: "#7b61d1", soft: "#e8e0fb", avatar: "#ede7fc" },
+        image: "https://res.littlefox.co.kr/static/layout/global/img/welcome3/img_chr5.png",
+        age: "고3 (여)",
+        period: "6세부터 11년 3개월",
+        title: "서울대 21학번, 리틀팍스 덕분에 합격했습니다!",
+        body: [
+            ["[학생] 제가 리틀팍스를 접한 것은 6살입니다. 어머니는 리틀팍스의 다양한 영어 동화를 흘려듣도록 자주 틀어놓으셨습니다. 어느 순간부터, 스스로 리틀팍스 앞에 붙어있는 시간이 길어졌고, ", { mark: "리틀팍스를 듣는 시간은, 제게 '노는 시간'이었습니다." }, " ", { mark: "리틀팍스는 제가 모르는 사이에 '영어에 대한 흥미'도 선사해 주었던 것 같습니다." }, " ", { mark: "판타지 동화를 즐겨보았는데, 관심을 확장해나가, 'Magic tree house'와 같은 영어 원서들도 찾아 읽게 되었고, 결국 제가 영어 소설을 쓰기에 이르렀습니다." }],
+            ["신기하게도, 영어점수는 늘 상위권이었습니다. 영어 1등급은 물론이고, 고등학교 1학년 때 4등급이었던 러시아어 성적을 1등급으로 올려놓을 수 있었습니다. 결국, 서울대학교 노어노문학과에 지원하게 되었고, 서울대 합격이라는 결과를 선물받을 수 있었던 것에, 다시 한번 리틀팍스에게 고맙다고 전하고 싶습니다."]
+        ],
+        link: "https://www.littlefox.co.kr/ko/testimonials_forum/bbs_view/1254912/1/1/N/null/null/N/"
+    }
+];
+
+noteTotal.textContent = String(userNotes.length).padStart(2, "0");
+
+function renderNote(index) {
+    const note = userNotes[index];
+    noteIndex = index;
+
+    // 넘기는 종이에 복제해도 색이 따라가도록 페이지마다 둔다
+    [notePageLeft, notePageRight].forEach(page => {
+        Object.entries(note.theme).forEach(([key, value]) => page.style.setProperty("--note-" + key, value));
+    });
+
+    notePhoto.src = note.image;
+    const age = document.createElement("span");
+    const period = document.createElement("span");
+    age.textContent = "연령 : " + note.age;
+    period.textContent = "이용기간 : " + note.period;
+    noteMeta.replaceChildren(age, period);
+    noteTitle.textContent = note.title;
+    const text = document.createElement("div");
+    text.className = "user-note-story-text";
+    text.append(...note.body.map(parts => {
+        const paragraph = document.createElement("p");
+        paragraph.append(...parts.map(part => {
+            if (typeof part === "string") return part;
+            const mark = document.createElement("mark");
+            mark.className = "user-note-highlight";
+            mark.textContent = part.mark;
+            return mark;
+        }));
+        return paragraph;
+    }));
+    noteBody.replaceChildren(text);
+    centerNoteText();
+    noteLink.href = note.link;
+    noteCurrent.textContent = String(index + 1).padStart(2, "0");
+
+    const last = index === userNotes.length - 1;
+    notePrev.disabled = index === 0;
+    noteNext.disabled = last;
+    noteCorner.hidden = last;
+    noteTabs.forEach((tab, i) => {
+        tab.classList.toggle("is-active", i === index);
+        tab.setAttribute("aria-selected", String(i === index));
+    });
+}
+
+// 본문을 종이 줄 칸 단위로 세로 가운데에 둔다. 칸이 부족하면 첫 줄부터 보여 준다
+function centerNoteText() {
+    const text = noteBody.querySelector(".user-note-story-text");
+    if (!text) return;
+    text.style.marginTop = "0px";
+    if (noteContent.hidden) return;
+    const line = parseFloat(getComputedStyle(noteBody).lineHeight);
+    const room = noteBody.clientHeight - text.offsetHeight;
+    if (!(line > 0) || room < line) return;
+    text.style.marginTop = Math.floor(room / 2 / line) * line + "px";
+}
+
+// 넘기는 종이 한 면에 페이지 복제본을 붙인다. page가 없으면 빈 종이
+function paperFace(face, page) {
+    if (!page) {
+        face.replaceChildren();
+        return;
+    }
+    const copy = page.cloneNode(true);
+    copy.style.opacity = "";
+    copy.style.visibility = "";
+    copy.querySelectorAll("[id]").forEach(el => el.removeAttribute("id"));
+    face.replaceChildren(copy);
+}
+
+// dir 1: 오른쪽 장이 왼쪽으로, -1: 왼쪽 장이 오른쪽으로. 먼저 넘어가는 장이 위에 쌓인다
+function prepareFlips(count, dir) {
+    noteFlips.forEach((flip, i) => {
+        paperFace(flip.children[0]);
+        paperFace(flip.children[1]);
+        gsap.set(flip, {
+            left: dir > 0 ? "50%" : "0%",
+            transformOrigin: dir > 0 ? "left center" : "right center",
+            transformPerspective: 2400,
+            rotationY: 0,
+            zIndex: count - i,
+            visibility: i < count ? "visible" : "hidden"
+        });
+    });
+}
+
+// 반쯤 넘어갔을 때 z를 올려야 먼저 넘어간 장 위에 다음 장이 쌓인다
+function addFlips(tl, count, dir, at, gap, duration) {
+    for (let i = 0; i < count; i++) {
+        const start = at + i * gap;
+        tl.to(noteFlips[i], { rotationY: dir > 0 ? -180 : 180, duration, ease: "power2.inOut" }, start)
+            .set(noteFlips[i], { zIndex: 10 + i }, start + duration / 2);
+    }
+}
+
+function resetFlips() {
+    gsap.set(noteFlips, { visibility: "hidden", rotationY: 0 });
+    gsap.set(noteHold, { visibility: "hidden" });
+    noteFlips.forEach(flip => {
+        paperFace(flip.children[0]);
+        paperFace(flip.children[1]);
+    });
+    paperFace(noteHold);
+}
+
+function resetBook() {
+    if (noteTl) {
+        noteTl.kill();
+        noteTl = null;
+    }
+    resetFlips();
+    renderNote(0);
+    noteContent.hidden = true;
+    noteBook.dataset.state = "closed";
+    gsap.set(noteBook, { x: 0, xPercent: -25 });
+    gsap.set(noteCover, { rotationY: 0, zIndex: 5, transformPerspective: 2400, transformOrigin: "left center" });
+    gsap.set(notePageLeft, { autoAlpha: 1 });
+    gsap.set([notePencil, noteGuide], { autoAlpha: 0 });
+}
+
+// 표지가 넘어간 뒤 속지가 촤라락 넘어가고, 마지막 장 뒷면이 index번 수기의 왼쪽 페이지
+function openBook(index = 0) {
+    if (switching) return;
+    switching = true;
+    noteBook.dataset.state = "opening";
+    renderNote(index);
+    noteContent.hidden = false;
+    centerNoteText();
+
+    prepareFlips(noteFlips.length, 1);
+    paperFace(noteFlips[noteFlips.length - 1].children[1], notePageLeft);
+    gsap.set(notePageLeft, { autoAlpha: 0 });
+
+    if (noteTl) noteTl.kill();
+    noteTl = gsap.timeline({
+        onComplete: () => {
+            gsap.set(notePageLeft, { autoAlpha: 1 });
+            resetFlips();
+            noteBook.dataset.state = "open";
+            switching = false;
+        }
+    });
+    noteTl
+        .to(noteBook, { xPercent: 0, duration: 1, ease: "power3.inOut" }, 0)
+        .to(noteCover, { rotationY: -180, duration: 1, ease: "power3.inOut" }, 0)
+        .set(noteCover, { zIndex: 2 }, .5)
+        .to([notePencil, noteGuide], { autoAlpha: 1, duration: .5 }, .8);
+    addFlips(noteTl, noteFlips.length, 1, .75, .1, .6);
+}
+
+function closeBook() {
+    if (switching) return;
+    switching = true;
+
+    if (noteTl) noteTl.kill();
+    noteTl = gsap.timeline({
+        onComplete: () => {
+            noteContent.hidden = true;
+            gsap.set(notePageLeft, { autoAlpha: 1 });
+            noteBook.dataset.state = "closed";
+            switching = false;
+        }
+    });
+    noteTl
+        .to([notePencil, noteGuide], { autoAlpha: 0, duration: .3 }, 0)
+        .to(notePageLeft, { autoAlpha: 0, duration: .2 }, 0)
+        .to(noteBook, { xPercent: -25, duration: .9, ease: "power3.inOut" }, .15)
+        .to(noteCover, { rotationY: 0, duration: .9, ease: "power3.inOut" }, .15)
+        .set(noteCover, { zIndex: 5 }, .6);
+}
+
+// 넘어가는 동안 반대쪽 페이지는 이전 내용 복제본(hold)으로 가려 둔다
+function goNote(target) {
+    if (switching || noteBook.dataset.state !== "open") return;
+    if (target === noteIndex || target < 0 || target >= userNotes.length) return;
+    switching = true;
+    const dir = target > noteIndex ? 1 : -1;
+    const count = Math.min(Math.abs(target - noteIndex), noteFlips.length);
+
+    prepareFlips(count, dir);
+    paperFace(noteHold, dir > 0 ? notePageLeft : notePageRight);
+    gsap.set(noteHold, { left: dir > 0 ? "0%" : "50%", visibility: "visible" });
+    paperFace(noteFlips[0].children[0], dir > 0 ? notePageRight : notePageLeft);
+    renderNote(target);
+    paperFace(noteFlips[count - 1].children[1], dir > 0 ? notePageLeft : notePageRight);
+
+    if (noteTl) noteTl.kill();
+    noteTl = gsap.timeline({
+        onComplete: () => {
+            resetFlips();
+            switching = false;
+        }
+    });
+    addFlips(noteTl, count, dir, 0, .12, .75);
+}
+
+function enterSection04() {
+    onSection04 = true;
+    onSection03 = false;
+    switching = true;
+    closeStory(false);
+    if (section04Tl) section04Tl.kill();
+    resetBook();
+    gsap.set(section04, { visibility: "visible", yPercent: 100 });
+
+    section04Tl = gsap.timeline({
+        onComplete: () => {
+            setStoryFloat(false);
+            switching = false;
+        }
+    });
+    section04Tl
+        .to(section04, { yPercent: 0, duration: 1, ease: "power3.inOut" })
+        .to(storiesStage, { scale: .96, opacity: .5, duration: 1, ease: "power3.inOut" }, "<");
+}
+
+function leaveSection04() {
+    onSection04 = false;
+    onSection03 = true;
+    switching = true;
+    setStoryFloat(true);
+    if (section04Tl) section04Tl.kill();
+
+    section04Tl = gsap.timeline({
+        onComplete: () => {
+            gsap.set(section04, { visibility: "hidden", yPercent: 0 });
+            resetBook();
+            switching = false;
+        }
+    });
+    section04Tl
+        .to(section04, { yPercent: 100, duration: .9, ease: "power3.inOut" })
+        .to(storiesStage, { scale: 1, opacity: 1, duration: .9, ease: "power3.inOut" }, "<");
 }
 
 function changeChannel(dir) {
     if (!introDone || switching || !storyCard.hidden) return;
 
+    // 휠: 닫힌 책은 열고, 펼친 책은 한 장씩. 첫 수기에서 올리면 책을 닫는다
+    if (onSection04) {
+        const closed = noteBook.dataset.state === "closed";
+        if (dir > 0) {
+            if (closed) openBook(0);
+            else goNote(noteIndex + 1);
+        } else if (closed) {
+            leaveSection04();
+        } else if (noteIndex > 0) {
+            goNote(noteIndex - 1);
+        } else {
+            closeBook();
+        }
+        return;
+    }
+
     if (onSection03) {
         if (dir < 0) leaveSection03();
+        else enterSection04();
         return;
     }
 
@@ -1354,6 +1722,20 @@ remoteNext.addEventListener("click", () => changeChannel(1));
 storyBubbles.forEach(bubble => bubble.addEventListener("click", () => openStory(bubble)));
 storyClose.addEventListener("click", () => closeStory(true));
 storyDim.addEventListener("click", () => closeStory(true));
+// 그림 파일이 아직 없으면 깨진 아이콘 대신 빈 원으로 둔다
+notePhoto.addEventListener("error", () => notePhoto.removeAttribute("src"));
+window.addEventListener("resize", () => {
+    if (!noteContent.hidden) centerNoteText();
+});
+noteOpen.addEventListener("click", () => openBook(0));
+noteClose.addEventListener("click", closeBook);
+noteTabs.forEach((tab, index) => tab.addEventListener("click", () => {
+    if (noteBook.dataset.state === "closed") openBook(index);
+    else goNote(index);
+}));
+notePrev.addEventListener("click", () => goNote(noteIndex - 1));
+noteNext.addEventListener("click", () => goNote(noteIndex + 1));
+noteCorner.addEventListener("click", () => goNote(noteIndex + 1));
 storyCard.addEventListener("wheel", e => e.stopPropagation(), { passive: true });
 storyCopy.addEventListener("touchend", e => e.stopPropagation());
 
