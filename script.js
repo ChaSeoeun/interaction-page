@@ -271,8 +271,8 @@ function resetIntro() {
     }
     closeStory(false);
     setStoryFloat(false);
-    gsap.killTweensOf(section03);
-    gsap.set(section03, { opacity: 0, visibility: "hidden", yPercent: 0 });
+    gsap.killTweensOf([section03, storiesStage]);
+    gsap.set(section03, { opacity: 0, visibility: "hidden" });
     gsap.set(storiesStage, { scale: 1, opacity: 1 });
 
     onSection04 = false;
@@ -280,7 +280,8 @@ function resetIntro() {
         section04Tl.kill();
         section04Tl = null;
     }
-    gsap.set(section04, { visibility: "hidden", yPercent: 0 });
+    gsap.killTweensOf(section04);
+    gsap.set(section04, { opacity: 0, visibility: "hidden" });
     resetBook();
 
     gsap.set(fullscreenNoise, {
@@ -1259,43 +1260,6 @@ section03.addEventListener("pointermove", event => {
 });
 section03.addEventListener("pointerleave", () => { storyPointer.active = false; });
 
-function enterSection03() {
-    onSection03 = true;
-    onSection02 = false;
-    switching = true;
-    closeStory(false);
-    setStoryFloat(true);
-    if (section03Tl) section03Tl.kill();
-    gsap.set(section03, { visibility: "visible", opacity: 1, yPercent: 100 });
-
-    section03Tl = gsap.timeline({
-        onComplete: () => { switching = false; }
-    });
-    // 내용 묶음처럼 아래에서 올라와 앞 화면을 덮고, 덮이는 쪽은 살짝 멀어진다
-    section03Tl
-        .to(section03, { yPercent: 0, duration: 1, ease: "power3.inOut" })
-        .to(philosophy, { scale: .96, opacity: .5, duration: 1, ease: "power3.inOut" }, "<");
-}
-
-function leaveSection03() {
-    onSection03 = false;
-    onSection02 = true;
-    switching = true;
-    closeStory(false);
-    setStoryFloat(false);
-    if (section03Tl) section03Tl.kill();
-
-    section03Tl = gsap.timeline({
-        onComplete: () => {
-            gsap.set(section03, { visibility: "hidden", yPercent: 0 });
-            gsap.set(philosophy, { scale: 1, opacity: 1 });
-            switching = false;
-        }
-    });
-    section03Tl
-        .to(section03, { yPercent: 100, duration: .9, ease: "power3.inOut" })
-        .to(philosophy, { scale: 1, opacity: 1, duration: .9, ease: "power3.inOut" }, "<");
-}
 
 // ---------- section04 ----------
 
@@ -1563,6 +1527,38 @@ function goNote(target) {
     addFlips(noteTl, count, dir, 0, .12, .75);
 }
 
+function enterSection03() {
+    onSection03 = true;
+    onSection02 = false;
+    switching = true;
+    closeStory(false);
+    setStoryFloat(true);
+    if (section03Tl) section03Tl.kill();
+    gsap.set(section03, { visibility: "visible", opacity: 0 });
+
+    section03Tl = gsap.timeline({
+        onComplete: () => { switching = false; }
+    });
+    section03Tl.to(section03, { opacity: 1, duration: .7, ease: "power2.inOut" });
+}
+
+function leaveSection03() {
+    onSection03 = false;
+    onSection02 = true;
+    switching = true;
+    closeStory(false);
+    setStoryFloat(false);
+    if (section03Tl) section03Tl.kill();
+
+    section03Tl = gsap.timeline({
+        onComplete: () => {
+            gsap.set(section03, { visibility: "hidden", opacity: 0 });
+            switching = false;
+        }
+    });
+    section03Tl.to(section03, { opacity: 0, duration: .6, ease: "power2.inOut" });
+}
+
 function enterSection04() {
     onSection04 = true;
     onSection03 = false;
@@ -1570,7 +1566,7 @@ function enterSection04() {
     closeStory(false);
     if (section04Tl) section04Tl.kill();
     resetBook();
-    gsap.set(section04, { visibility: "visible", yPercent: 100 });
+    gsap.set(section04, { visibility: "visible", opacity: 0 });
 
     section04Tl = gsap.timeline({
         onComplete: () => {
@@ -1578,9 +1574,7 @@ function enterSection04() {
             switching = false;
         }
     });
-    section04Tl
-        .to(section04, { yPercent: 0, duration: 1, ease: "power3.inOut" })
-        .to(storiesStage, { scale: .96, opacity: .5, duration: 1, ease: "power3.inOut" }, "<");
+    section04Tl.to(section04, { opacity: 1, duration: .7, ease: "power2.inOut" });
 }
 
 function leaveSection04() {
@@ -1592,32 +1586,39 @@ function leaveSection04() {
 
     section04Tl = gsap.timeline({
         onComplete: () => {
-            gsap.set(section04, { visibility: "hidden", yPercent: 0 });
+            gsap.set(section04, { visibility: "hidden", opacity: 0 });
             resetBook();
             switching = false;
         }
     });
-    section04Tl
-        .to(section04, { yPercent: 100, duration: .9, ease: "power3.inOut" })
-        .to(storiesStage, { scale: 1, opacity: 1, duration: .9, ease: "power3.inOut" }, "<");
+    section04Tl.to(section04, { opacity: 0, duration: .6, ease: "power2.inOut" });
+}
+
+function wheelPixels(event) {
+    if (event.deltaMode === 1) return event.deltaY * 32;
+    if (event.deltaMode === 2) return event.deltaY * window.innerHeight;
+    return event.deltaY;
+}
+
+function canInnerScroll(node, delta) {
+    let el = node instanceof Element ? node : null;
+    while (el && el !== document.documentElement) {
+        const overflowY = getComputedStyle(el).overflowY;
+        if ((overflowY === "auto" || overflowY === "scroll") && el.scrollHeight > el.clientHeight + 2) {
+            const limit = el.scrollHeight - el.clientHeight;
+            if (delta > 0 && el.scrollTop < limit - 1) return true;
+            if (delta < 0 && el.scrollTop > 1) return true;
+        }
+        el = el.parentElement;
+    }
+    return false;
 }
 
 function changeChannel(dir) {
     if (!introDone || switching || !storyCard.hidden) return;
 
-    // 휠: 닫힌 책은 열고, 펼친 책은 한 장씩. 첫 수기에서 올리면 책을 닫는다
     if (onSection04) {
-        const closed = noteBook.dataset.state === "closed";
-        if (dir > 0) {
-            if (closed) openBook(0);
-            else goNote(noteIndex + 1);
-        } else if (closed) {
-            leaveSection04();
-        } else if (noteIndex > 0) {
-            goNote(noteIndex - 1);
-        } else {
-            closeBook();
-        }
+        if (dir < 0) leaveSection04();
         return;
     }
 
@@ -1740,17 +1741,23 @@ storyCard.addEventListener("wheel", e => e.stopPropagation(), { passive: true })
 storyCopy.addEventListener("touchend", e => e.stopPropagation());
 
 window.addEventListener("wheel", e => {
-    if (Math.abs(e.deltaY) < 8) return;
-    changeChannel(e.deltaY > 0 ? 1 : -1);
+    const delta = wheelPixels(e);
+    if (!delta || !introDone || !storyCard.hidden) return;
+    if (canInnerScroll(e.target, delta)) return;
+    if (switching || Math.abs(delta) < 8) return;
+    changeChannel(delta > 0 ? 1 : -1);
 }, { passive: true });
 
 let touchStartY = null;
-window.addEventListener("touchstart", e => { touchStartY = e.touches[0].clientY; }, { passive: true });
+window.addEventListener("touchstart", e => {
+    touchStartY = e.touches[0].clientY;
+}, { passive: true });
 window.addEventListener("touchend", e => {
     if (touchStartY === null) return;
     const diff = touchStartY - e.changedTouches[0].clientY;
-    if (Math.abs(diff) > 40) changeChannel(diff > 0 ? 1 : -1);
     touchStartY = null;
+    if (canInnerScroll(e.target, diff)) return;
+    if (Math.abs(diff) > 40) changeChannel(diff > 0 ? 1 : -1);
 });
 
 window.addEventListener("keydown", e => {
