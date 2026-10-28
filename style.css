@@ -1,12 +1,21 @@
 * { box-sizing: border-box; }
 
+:root {
+    --point: #ff3e5f;
+    --font: "Pretendard", "Malgun Gothic", sans-serif;
+}
+
 /* 커서 이미지는 128px 넘으면 무시됨. 12 2 = 클릭 지점(왼쪽 귀 끝) */
 html, body, button, a {
     cursor: url("./images/cursor-custom-48.png") 12 2, auto;
 }
 
-html, body, p, h1, h2, h3, h4, h5, h6, span, a, button, li, label {
-    font-family: "Pretendard", "Malgun Gothic", sans-serif;
+html {
+    font-family: var(--font);
+}
+
+body, button, input, textarea, select {
+    font-family: inherit;
 }
 
 html, body {
@@ -18,9 +27,18 @@ html, body {
 }
 
 .c-ff3e5f {
-    color: #ff3e5f;
+    color: var(--point);
 }
 
+/* 섹션 1~6이 같은 화면을 덮는다. 층과 배경만 섹션마다 따로 둔다 */
+.stage {
+    position: fixed;
+    inset: 0;
+    opacity: 0;
+    visibility: hidden;
+}
+
+/* ===== 인트로 ===== */
 .intro {
     position: fixed;
     inset: 0;
@@ -83,10 +101,10 @@ html, body {
     z-index: 1;
 }
 
-.scanline {
+.scanline,
+.full-scanline {
     position: absolute;
     inset: 0;
-    z-index: 2;
     pointer-events: none;
     opacity: .07;
     background: repeating-linear-gradient(
@@ -96,6 +114,10 @@ html, body {
         rgba(0, 0, 0, .07) 2px,
         rgba(0, 0, 0, .07) 4px
     );
+}
+
+.scanline {
+    z-index: 2;
 }
 
 .rgb {
@@ -152,7 +174,6 @@ html, body {
     transform: translateY(-50%);
     font-size: 5cqw;
     font-weight: 600;
-    /* line-height: 1.6; */
     text-align: center;
     white-space: nowrap;
     color: #fff;
@@ -306,28 +327,21 @@ html, body {
     50%      { translate: 0 8px; }
 }
 
-/* 인트로 다음 칸. TV가 화면을 채운 뒤 이 위에서 풀화면으로 이어짐 */
+/* ===== 섹션 1 ===== */
+/* TV가 화면을 채운 뒤 이 위에서 풀화면으로 이어짐 */
 .section01 {
-    position: fixed;
-    inset: 0;
-    width: 100vw;
-    height: 100vh;
     z-index: 40;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     padding: 11vh 6vw 10vh;
-    background: transparent;
-    opacity: 0;
-    visibility: hidden;
     pointer-events: none;
     text-align: center;
 }
 
 .section-intro h2,
-.section-intro p,
-.section-intro h3 {
+.section-intro p {
     opacity: 0;
 }
 
@@ -346,10 +360,6 @@ html, body {
 .section-korea,
 .section-listening {
     opacity: 0;
-}
-
-.section-korea p {
-    margin: 0 0 1.4vh;
 }
 
 /* 리스닝~라이팅 묶음이 빠진 뒤 화면 가운데에 겹쳐 뜨는 연도 */
@@ -416,25 +426,24 @@ html, body {
     transition: height .8s cubic-bezier(.4, 0, .2, 1), aspect-ratio .8s cubic-bezier(.4, 0, .2, 1), border-radius .8s ease, box-shadow .8s ease;
 }
 
+.section-listening:is(.is-reading, .is-speaking, .is-writing) .listening-media {
+    border-radius: 0;
+    box-shadow: none;
+}
+
 .section-listening.is-reading .listening-media {
     height: min(calc(42vh * 1672 / 941 * 693 / 1536), calc(68vw * 693 / 1536));
     aspect-ratio: 1536 / 693;
-    border-radius: 0;
-    box-shadow: none;
 }
 
 .section-listening.is-speaking .listening-media {
     height: min(calc(42vh * 1672 / 941 * 899 / 1494), calc(68vw * 899 / 1494));
     aspect-ratio: 1494 / 899;
-    border-radius: 0;
-    box-shadow: none;
 }
 
 .section-listening.is-writing .listening-media {
     height: min(calc(42vh * 1672 / 941 * 934 / 1536), calc(68vw * 934 / 1536));
     aspect-ratio: 1536 / 934;
-    border-radius: 0;
-    box-shadow: none;
 }
 
 .listening-media img {
@@ -460,33 +469,6 @@ html, body {
     opacity: 0;
 }
 
-.section-listening.is-reading .media-listening {
-    opacity: 0;
-}
-
-.section-listening.is-reading .media-reading {
-    opacity: 1;
-}
-
-.section-listening.is-speaking .media-listening,
-.section-listening.is-speaking .media-reading {
-    opacity: 0;
-}
-
-.section-listening.is-speaking .media-speaking {
-    opacity: 1;
-}
-
-.section-listening.is-writing .media-listening,
-.section-listening.is-writing .media-reading,
-.section-listening.is-writing .media-speaking {
-    opacity: 0;
-}
-
-.section-listening.is-writing .media-writing {
-    opacity: 1;
-}
-
 /* 하단 재생 바 위 자막. 리딩에선 오른쪽 페이지 한가운데로 옮겨 검은 글씨가 됨 */
 .media-caption {
     position: absolute;
@@ -505,16 +487,18 @@ html, body {
     transition: left .8s cubic-bezier(.4, 0, .2, 1), top .8s cubic-bezier(.4, 0, .2, 1), translate .8s cubic-bezier(.4, 0, .2, 1), color .45s ease, background-color .45s ease, padding .45s ease, font-size .8s ease, border-radius .45s ease;
 }
 
-.section-listening.is-reading .media-caption {
-    left: 72.5%;
-    top: 46%;
-    translate: -50% -50%;
+.section-listening:is(.is-reading, .is-speaking, .is-writing) .media-caption {
     padding: 0;
     border-radius: 0;
     background: transparent;
     color: #1a1a1a;
+}
+
+.section-listening.is-reading .media-caption {
+    left: 72.5%;
+    top: 46%;
+    translate: -50% -50%;
     font-size: 4.8cqw;
-    font-weight: 600;
 }
 
 /* 말풍선 흰 영역 한가운데. 타원은 이미지 위쪽 약 30%까지 */
@@ -522,10 +506,6 @@ html, body {
     left: 50%;
     top: 15.6%;
     translate: -50% -50%;
-    padding: 0;
-    border-radius: 0;
-    background: transparent;
-    color: #1a1a1a;
     font-size: 5.4cqw;
     font-weight: 700;
 }
@@ -535,12 +515,7 @@ html, body {
     left: 50%;
     top: 11.35%;
     translate: -50% -92%;
-    padding: 0;
-    border-radius: 0;
-    background: transparent;
-    color: #1a1a1a;
     font-size: 2.7cqw;
-    font-weight: 600;
 }
 
 .media-copy {
@@ -566,30 +541,14 @@ html, body {
     opacity: 0;
 }
 
-.section-listening.is-reading .copy-listening {
+/* 듣기·읽기·말하기·쓰기 중 클래스 하나만 켜진다 */
+.section-listening:is(.is-reading, .is-speaking, .is-writing) :is(.media-listening, .copy-listening) {
     opacity: 0;
 }
 
-.section-listening.is-reading .copy-reading {
-    opacity: 1;
-}
-
-.section-listening.is-speaking .copy-listening,
-.section-listening.is-speaking .copy-reading {
-    opacity: 0;
-}
-
-.section-listening.is-speaking .copy-speaking {
-    opacity: 1;
-}
-
-.section-listening.is-writing .copy-listening,
-.section-listening.is-writing .copy-reading,
-.section-listening.is-writing .copy-speaking {
-    opacity: 0;
-}
-
-.section-listening.is-writing .copy-writing {
+.section-listening.is-reading :is(.media-reading, .copy-reading),
+.section-listening.is-speaking :is(.media-speaking, .copy-speaking),
+.section-listening.is-writing :is(.media-writing, .copy-writing) {
     opacity: 1;
 }
 
@@ -619,15 +578,12 @@ html, body {
     color: rgba(255, 255, 255, .92);
 }
 
+/* ===== 섹션 2 ===== */
 /* 연도 다음. 큰 제목이 좌측 상단으로 붙으면 일러스트와 문구가 나란히 뜬다 */
 .section02 {
-    position: fixed;
-    inset: 0;
     z-index: 50;
     overflow: hidden;
     background: #f4efe6;
-    opacity: 0;
-    visibility: hidden;
     pointer-events: none;
 }
 
@@ -743,10 +699,8 @@ html, body {
     top: 50%;
     opacity: 0;
     visibility: hidden;
-    width: 2.5vw;
     width: calc(var(--wheel-box) * 554 / 1243);
     aspect-ratio: 554 / 784;
-    margin-top: calc(2.5vw * 784 / 554 / -2);
     margin-top: calc(var(--wheel-box) * 784 / 1243 / -2);
     overflow: hidden;
     animation: wheel-bob 1.4s ease-in-out infinite;
@@ -762,6 +716,7 @@ html, body {
     top: -37.2%;
 }
 
+/* 인트로 · 켜질 때 깔리는 노이즈 */
 .fullscreen-noise {
     position: fixed;
     inset: 0;
@@ -779,20 +734,6 @@ html, body {
     width: 100%;
     height: 100%;
     image-rendering: pixelated;
-}
-
-.full-scanline {
-    position: absolute;
-    inset: 0;
-    opacity: .07;
-    pointer-events: none;
-    background: repeating-linear-gradient(
-        to bottom,
-        rgba(255, 255, 255, .04) 0,
-        rgba(255, 255, 255, .04) 1px,
-        rgba(0, 0, 0, .05) 2px,
-        rgba(0, 0, 0, .05) 4px
-    );
 }
 
 .power-line {
@@ -822,17 +763,11 @@ html, body {
     pointer-events: none;
 }
 
-/* 가족 이야기. 말풍선 몸통과 꼬리는 배경색만으로 그린다 */
+/* ===== 섹션 3 ===== */
+/* 가족 이야기. 말풍선 몸통과 꼬리는 배경색만으로 그린다. 자리는 script의 storySpots */
 .section03 {
-    position: fixed;
-    inset: 0;
     z-index: 60;
-    width: 100%;
-    height: 100vh;
     overflow: hidden;
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: auto;
     background:
         radial-gradient(circle at 18% 30%, rgba(255, 214, 236, .45), transparent 24%),
         radial-gradient(circle at 82% 68%, rgba(214, 236, 255, .5), transparent 26%),
@@ -940,15 +875,15 @@ html, body {
 }
 
 .bubble { max-width: 28vw; }
-.bubble-meet { left: 2.5%; top: 43.7%; background: #f8e4f2; }
+.bubble-meet { background: #f8e4f2; }
 .bubble-meet::after { right: -.45vw; top: 42%; transform: rotate(-24deg); }
-.bubble-read { left: 6.4%; top: 10.3%; background: #ece6ff; }
+.bubble-read { background: #ece6ff; }
 .bubble-read::after { left: 72%; bottom: -.48vw; transform: rotate(24deg); }
-.bubble-choose { left: 10%; top: 80.7%; background: #d9efff; }
+.bubble-choose { background: #d9efff; }
 .bubble-choose::after { left: 68%; top: -.55vw; width: 1.7vw; height: 1.7vw; transform: rotate(40deg); }
-.bubble-habit { left: 67.3%; top: 9.5%; background: #fff4c8; }
+.bubble-habit { background: #fff4c8; }
 .bubble-habit::after { left: 18%; bottom: -.48vw; transform: rotate(18deg); }
-.bubble-speak { left: 64.2%; top: 76.4%; background: #eee7ff; }
+.bubble-speak { background: #eee7ff; }
 .bubble-speak::after { left: 22%; top: -.5vw; transform: rotate(28deg); }
 
 .bubble.is-gone {
@@ -964,7 +899,9 @@ html, body {
 }
 
 .story-card[hidden],
-.story-dim[hidden] {
+.story-dim[hidden],
+.user-note-content[hidden],
+.user-note-corner[hidden] {
     display: none !important;
 }
 
@@ -974,7 +911,6 @@ html, body {
     z-index: 100;
     display: flex;
     flex-direction: column;
-    box-sizing: border-box;
     width: 50vw;
     height: 50vh;
     margin: auto;
@@ -1096,17 +1032,11 @@ html, body {
     background: #c5ceda;
 }
 
+/* ===== 섹션 4 ===== */
 /* 회원 활용수기. 공책 안쪽 크기는 모두 책 너비(cqw) 기준 */
 .section04 {
-    position: fixed;
-    inset: 0;
     z-index: 65;
-    width: 100%;
-    height: 100vh;
     overflow: hidden;
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: auto;
     background:
         radial-gradient(circle at 12% 18%, rgba(214, 232, 255, .55), transparent 28%),
         radial-gradient(circle at 88% 82%, rgba(255, 233, 214, .5), transparent 30%),
@@ -1276,10 +1206,6 @@ html, body {
     position: absolute;
     inset: 2.4% 1.6%;
     z-index: 3;
-}
-
-.user-note-content[hidden] {
-    display: none;
 }
 
 .user-note-spread {
@@ -1522,10 +1448,6 @@ html, body {
     transition: width .25s ease, height .25s ease;
 }
 
-.user-note-corner[hidden] {
-    display: none;
-}
-
 .user-note-corner:hover {
     width: 7.6cqw;
     height: 7.6cqw;
@@ -1700,17 +1622,14 @@ html, body {
     opacity: 0;
     visibility: hidden;
 }
+/* ===== 섹션 5 ===== */
 .section05 {
-    position: fixed;
-    inset: 0;
     z-index: 70;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    opacity: 0;
     background: #fff;
-    visibility: hidden;
     overflow: hidden;
 }
 
@@ -1802,17 +1721,30 @@ html, body {
     color: #8d97a8;
 }
 
-.section05-bar {
+/* 섹션 5 차트와 섹션 6 동요 비율이 같은 막대 */
+.section05-bar,
+.song-ratio {
     display: flex;
     height: clamp(58px, 7.2vh, 92px);
     border-radius: 999px;
     overflow: hidden;
 }
 
-.section05-seg {
+.section05-seg,
+.song-ratio span {
     display: flex;
     align-items: center;
     justify-content: center;
+    white-space: nowrap;
+}
+
+.section05-seg b,
+.song-ratio b {
+    margin-left: .28em;
+    font-weight: 800;
+}
+
+.section05-seg {
     flex: 0 0 auto;
     width: 0;
     overflow: hidden;
@@ -1820,16 +1752,10 @@ html, body {
     font-size: clamp(18px, 1.45vw, 28px);
     font-weight: 700;
     letter-spacing: -.03em;
-    white-space: nowrap;
 }
 
-.section05-seg b {
-    margin-left: .28em;
-    font-weight: 800;
-}
 .section05-seg.is-original {
     background: #2f78d8;
-    color: #fff;
 }
 
 .section05-seg.is-classic {
@@ -1839,7 +1765,6 @@ html, body {
 
 .section05-seg.is-fiction {
     background: #1f8a48;
-    color: #fff;
 }
 
 .section05-seg.is-nonfiction {
@@ -1849,11 +1774,11 @@ html, body {
 
 .section05-levels {
     position: absolute;
-    left: 50%;
-    top: 50%;
+    inset: 0;
     z-index: 4;
     width: min(92vw, 1380px);
-    translate: -50% -50%;
+    height: fit-content;
+    margin: auto;
     padding: 2.8vh 1.8vw 2.2vh;
     border-radius: 22px;
     background: #f4f7fc;
@@ -1962,15 +1887,6 @@ html, body {
     font-weight: 800;
     line-height: 1.28;
     letter-spacing: -.055em;
-}
-
-.section05-topics-head span {
-    display: block;
-    margin-top: 1vh;
-    color: #9aa3b2;
-    font-size: 1.35vw;
-    font-weight: 500;
-    letter-spacing: -.03em;
 }
 
 .section05-topics-chips {
@@ -2154,5 +2070,477 @@ html, body {
 
 .section05-topics-actions .is-line:hover {
     background: #f3f8ff;
+}
+
+/* ===== 섹션 6 ===== */
+/* 음표 → 가운데 제목 → 지금 화면 순으로 열리고, 주제 이미지를 재킷으로 쓴다 */
+.section06 {
+    z-index: 75;
+    overflow: hidden;
+    background:
+        radial-gradient(circle at 14% 12%, rgba(255, 214, 170, .55), transparent 26%),
+        radial-gradient(circle at 88% 88%, rgba(186, 214, 255, .35), transparent 28%),
+        #fbf6ea;
+    color: #1c1917;
+}
+
+.song-intro {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3.2vw;
+    pointer-events: none;
+}
+
+.song-intro-note {
+    display: block;
+    color: #000;
+    font-size: min(18vw, 250px);
+    font-weight: 800;
+    line-height: 1;
+    opacity: 0;
+}
+
+.song-intro-note.is-b {
+    margin-bottom: 8vh;
+}
+
+.song-intro-note.is-c {
+    margin-top: 4vh;
+}
+
+.song-intro-note.is-a {
+    margin-top: 7vh;
+}
+
+.song-intro-glyph {
+    display: block;
+    transform-origin: 50% 80%;
+    filter: drop-shadow(0 1.6vh 1.2vh rgba(70, 36, 12, .18));
+}
+
+.song-intro-note.is-dancing.is-a .song-intro-glyph {
+    animation: note-dance-a 1.35s ease-in-out infinite;
+}
+
+.song-intro-note.is-dancing.is-b .song-intro-glyph {
+    animation: note-dance-b 1.15s ease-in-out infinite;
+}
+
+.song-intro-note.is-dancing.is-c .song-intro-glyph {
+    animation: note-dance-c 1.55s ease-in-out -.4s infinite;
+}
+
+.song {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2.2vh;
+    padding: 4vh 4.6vw 3.4vh;
+    pointer-events: none;
+}
+
+.section06.is-layout .song {
+    pointer-events: auto;
+}
+
+.song-head {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    align-self: center;
+    width: max-content;
+    max-width: 92vw;
+    text-align: center;
+    opacity: 0;
+}
+
+.section06.is-title .song-head {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    z-index: 6;
+}
+
+.section06.is-title .song-head p {
+    font-size: 1.75vw;
+}
+
+.section06.is-title .song-head h2 {
+    margin-top: 1.5vh;
+    font-size: 5.5vw;
+    line-height: 1.12;
+}
+
+.song-body {
+    display: flex;
+    flex-direction: column;
+    gap: 2.2vh;
+    opacity: 0;
+}
+
+.song-head p {
+    margin: 0;
+    font-size: 1.05vw;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: #8a5a32;
+}
+
+.song-head h2 {
+    margin: .6vh 0 0;
+    font-size: 4.2vw;
+    font-weight: 900;
+    line-height: 1.15;
+    letter-spacing: -0.055em;
+}
+
+.section06:is(.is-ratio, .is-layout) .song-body {
+    opacity: 1;
+}
+
+.song-swap {
+    position: relative;
+    top: 50%;
+    transform: translateY(-80%);
+}
+
+.section06:is(.is-ratio, .is-layout) .song-side {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    width: min(86vw, 1120px);
+    margin-inline: auto;
+    text-align: center;
+}
+
+.section06.is-layout .song-side,
+.section06.is-ratio :is(.song-main, .song-notes, .song-actions) {
+    visibility: hidden;
+}
+
+.section06.is-ratio .song-total {
+    font-size: clamp(20px, 1.8vw, 32px);
+}
+
+.section06.is-ratio .song-total b {
+    font-size: clamp(64px, 6.4vw, 112px);
+}
+
+.section06.is-ratio .song-when {
+    margin-top: 1.2vh;
+    font-size: clamp(15px, 1.3vw, 24px);
+}
+
+.section06.is-ratio .song-ratio {
+    height: clamp(50px, 13vh, 100px);
+    margin-top: 3.4vh;
+    font-size: clamp(22px, 2vw, 36px);
+}
+
+.song-main {
+    display: flex;
+    align-items: center;
+    gap: 3.2vw;
+}
+
+.song-deck {
+    --sleeve: min(24vw, 36vh);
+    --disc: min(21.2vw, 31.5vh);
+    --peek: min(3.6vw, 5.4vh);
+    --slide: calc(var(--disc) * .72);
+    position: relative;
+    width: calc(var(--sleeve) + var(--peek) + var(--slide));
+    height: var(--sleeve);
+    flex: none;
+}
+
+.song-vinyl {
+    position: absolute;
+    z-index: 1;
+    top: calc((var(--sleeve) - var(--disc)) / 2);
+    left: calc(var(--sleeve) - var(--disc) + var(--peek));
+    width: var(--disc);
+    height: var(--disc);
+}
+
+.song-vinyl-spin {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background:
+        radial-gradient(circle at 32% 28%, rgba(255, 255, 255, .22), transparent 18%),
+        repeating-radial-gradient(circle at 50% 50%, #242424 0 1px, #0c0c0c 2px, #1a1a1a 3.5px);
+    box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, .16),
+        0 1.1vw 2.2vw rgba(40, 24, 8, .28);
+}
+
+.song-vinyl.is-out .song-vinyl-spin {
+    animation: song-spin 4.6s linear infinite;
+}
+
+.song-vinyl-label {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 42%;
+    height: 42%;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 0 0 0 .45vw #f4efe6;
+}
+
+.song-vinyl-hole {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    z-index: 1;
+    width: .7vw;
+    height: .7vw;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background: #161616;
+    box-shadow: 0 0 0 .12vw rgba(255, 255, 255, .35);
+}
+
+.song-sleeve {
+    position: absolute;
+    z-index: 2;
+    left: 0;
+    top: 0;
+    display: flex;
+    width: var(--sleeve);
+    height: var(--sleeve);
+    padding: 0;
+    border: 0;
+    border-radius: calc(var(--sleeve) * .025);
+    overflow: hidden;
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, .45), transparent 28%),
+        linear-gradient(165deg, #fffaf3 0%, #f4e6d2 100%);
+    box-shadow:
+        inset calc(var(--sleeve) * -.012) 0 calc(var(--sleeve) * .04) rgba(40, 22, 8, .22),
+        inset 0 0 0 1px rgba(90, 58, 28, .16),
+        0 1.2vw 2.4vw rgba(70, 42, 12, .16);
+    color: #1c1917;
+    text-align: left;
+}
+
+.song-sleeve-spine {
+    flex: none;
+    width: calc(var(--sleeve) * .085);
+    background: linear-gradient(90deg, #c4233f 0%, var(--point) 46%, #d12545 100%);
+    box-shadow: inset calc(var(--sleeve) * -.008) 0 0 rgba(255, 255, 255, .28);
+}
+
+.song-sleeve-copy {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex: 1;
+    min-width: 0;
+    padding: calc(var(--sleeve) * .1) calc(var(--sleeve) * .09) calc(var(--sleeve) * .09) calc(var(--sleeve) * .08);
+}
+
+.song-sleeve-copy b {
+    font-size: calc(var(--sleeve) * .14);
+    font-weight: 900;
+    line-height: 1.12;
+    letter-spacing: -0.06em;
+    word-break: keep-all;
+}
+
+.song-sleeve-copy span {
+    margin-top: calc(var(--sleeve) * .045);
+    font-size: calc(var(--sleeve) * .078);
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: -0.04em;
+    color: #c4233f;
+}
+
+.song-total {
+    margin: 0;
+    font-size: 1.4vw;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+}
+
+.song-total b {
+    margin-right: .15vw;
+    font-size: 4.6vw;
+    font-weight: 900;
+    letter-spacing: -0.06em;
+    line-height: .9;
+}
+
+.song-when {
+    margin: .8vh 0 0;
+    font-size: 1.15vw;
+    font-weight: 600;
+    color: #6d645b;
+}
+
+.song-ratio {
+    margin-top: 2.4vh;
+    background: #efe6d8;
+    font-size: clamp(18px, 1.45vw, 28px);
+    font-weight: 700;
+    letter-spacing: -.03em;
+}
+
+.song-ratio span {
+    min-width: 0;
+}
+
+.song-ratio .is-study {
+    width: 49%;
+    background: #d7ebff;
+    color: #1d4f86;
+}
+
+.song-ratio .is-world {
+    width: 51%;
+    background: #c5e2fb;
+    color: #16315f;
+}
+
+.song-hint {
+    margin: 0 0 1.8vh;
+    font-size: 1.05vw;
+    font-weight: 600;
+    color: #6d645b;
+}
+
+.song-topics-area {
+    flex: 1;
+    min-width: 0;
+}
+
+.song-topics {
+    display: flex;
+    flex-wrap: wrap;
+    align-content: center;
+    gap: .7vw;
+}
+
+.song-topic {
+    display: flex;
+    align-items: center;
+    gap: .45vw;
+    padding: .45vw .8vw .45vw .4vw;
+    border: 1px solid rgba(40, 28, 16, .08);
+    border-radius: 999px;
+    background: #fff;
+    color: #1c1917;
+    font-size: .92vw;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+}
+
+.song-topic img {
+    width: 2vw;
+    height: 2vw;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.song-topic b {
+    font-weight: 600;
+    color: #8a8178;
+}
+
+.song-topic.is-active {
+    background: #24324a;
+    color: #fff;
+}
+
+.song-topic.is-active b {
+    color: rgba(255, 255, 255, .78);
+}
+
+.song-notes {
+    align-self: center;
+    margin: 0;
+    padding: 5vw;
+    list-style: none;
+    font-size: 1vw;
+    font-weight: 500;
+    line-height: 1.55;
+    text-align: center;
+    color: #3c372f;
+}
+
+.song-notes li + li {
+    margin-top: .4vh;
+}
+
+.song-notes li::before {
+    content: "·";
+    margin-right: .35em;
+}
+
+.song-actions {
+    display: flex;
+    align-self: center;
+    justify-content: center;
+    gap: .8vw;
+}
+
+.song-actions a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 9vw;
+    height: 4.6vh;
+    padding: 0 1.3vw;
+    border-radius: 999px;
+    font-size: 1vw;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    text-decoration: none;
+}
+
+.song-actions .is-solid {
+    background: #24324a;
+    color: #fff;
+}
+
+.song-actions .is-line {
+    border: 2px solid #24324a;
+    color: #24324a;
+}
+
+@keyframes song-spin {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes note-dance-a {
+    0%, 100% { transform: translate(0, 0) rotate(-14deg); }
+    30% { transform: translate(1.1vw, -5.2vh) rotate(16deg); }
+    62% { transform: translate(-.9vw, 1vh) rotate(-7deg); }
+}
+
+@keyframes note-dance-b {
+    0%, 100% { transform: translate(0, .6vh) rotate(8deg); }
+    28% { transform: translate(-1.3vw, -4.4vh) rotate(-15deg); }
+    58% { transform: translate(.7vw, -6vh) rotate(12deg); }
+    80% { transform: translate(-.4vw, .4vh) rotate(-4deg); }
+}
+
+@keyframes note-dance-c {
+    0%, 100% { transform: translate(0, 0) rotate(11deg); }
+    34% { transform: translate(.8vw, -4.8vh) rotate(-16deg); }
+    68% { transform: translate(-1.1vw, 1.2vh) rotate(8deg); }
 }
 

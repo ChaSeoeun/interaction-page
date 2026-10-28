@@ -1,3 +1,6 @@
+// 화면 순서: 인트로 → 섹션 1 → 섹션 2 → 섹션 3 → 섹션 4 → 섹션 5 → 섹션 6
+
+// ===== 인트로 =====
 const scene = document.querySelector(".scene");
 const tvContent = document.querySelector(".tv-content");
 const story = document.querySelector(".story");
@@ -16,6 +19,11 @@ const libraryLogo = document.querySelector(".library-logo");
 const libraryClass = document.querySelector(".library-class");
 const librarySlot = document.querySelector(".library-slot");
 const roomBg = document.querySelector(".room-bg");
+const remote = document.querySelector(".remote");
+const wheelHint = document.querySelector(".wheel-hint");
+const remoteNext = document.querySelector(".remote-next");
+
+// ===== 섹션 1 =====
 const section01 = document.querySelector(".section01");
 const sectionCopy = document.querySelectorAll(".section-intro h2, .section-intro p");
 const sectionKorea = document.querySelector(".section-korea");
@@ -24,11 +32,15 @@ const sectionListening = document.querySelector(".section-listening");
 const yearInner = document.querySelector(".year-inner");
 const yearNum = document.querySelector(".year-num");
 const yearCopy = document.querySelector(".year-copy");
+
+// ===== 섹션 2 =====
 const section02 = document.querySelector(".section02");
 const philosophy = document.querySelector(".philosophy");
 const philosophyWheel = document.querySelector(".philosophy-wheel");
 const philosophyTitle = document.querySelector(".philosophy-title");
 const [philosophyStage, philosophyEarly, philosophyFun] = document.querySelectorAll(".philosophy-stage");
+
+// ===== 섹션 3 =====
 const section03 = document.querySelector(".section03");
 const storiesStage = document.querySelector(".stories");
 const storyWall = document.querySelector(".story-wall");
@@ -41,7 +53,11 @@ const interviewVideo = document.querySelector(".story-video video");
 const interviewSource = interviewVideo.querySelector("source");
 const storyCopy = document.querySelector(".story-copy");
 const storyClose = document.querySelector(".story-close");
+
+// ===== 섹션 4 =====
 const section04 = document.querySelector(".section04");
+
+// ===== 섹션 5 =====
 const section05 = document.querySelector(".section05");
 const section05Gallery = section05.querySelector(".section05-gallery");
 const section05Copy = section05.querySelector(".section-count");
@@ -50,7 +66,19 @@ const section05Chart = section05.querySelector(".section05-chart");
 const section05Levels = section05.querySelector(".section05-levels");
 const section05Segs = [...section05.querySelectorAll(".section05-seg")];
 const section05Topics = section05.querySelector(".section05-topics");
-const section05TopicButtons = [...section05Topics.querySelectorAll(".section05-topics-chips button")];
+const section05SlotRoot = section05Topics.querySelector(".section05-topics-slots");
+const SECTION05_SLOT_COUNT = 5;
+section05SlotRoot.replaceChildren(...Array.from({ length: SECTION05_SLOT_COUNT }, () => {
+    const slot = document.createElement("div");
+    slot.className = "section05-topics-slot";
+    const frame = document.createElement("div");
+    frame.className = "section05-slot-frame";
+    const label = document.createElement("p");
+    label.className = "js-topic-in";
+    slot.append(frame, label);
+    return slot;
+}));
+let section05TopicButtons = [];
 const section05TopicName = section05Topics.querySelector(".section05-topics-copy h3");
 const section05TopicCount = section05Topics.querySelector(".section05-topics-count b");
 const section05TopicDesc = section05Topics.querySelector(".section05-topics-desc");
@@ -60,6 +88,8 @@ let section05Thumbs = [];
 let section05Cast = [];
 let section05TopicIndex = 0;
 let section05TopicOffset = 0;
+
+// 섹션 4. 공책
 const noteBook = document.querySelector(".user-note-book");
 const noteContent = document.querySelector(".user-note-content");
 const [notePageLeft, notePageRight] = noteContent.querySelectorAll(".user-note-page");
@@ -74,17 +104,37 @@ const notePrev = document.querySelector(".user-note-prev");
 const noteNext = document.querySelector(".user-note-next");
 const noteCorner = document.querySelector(".user-note-corner");
 const noteClose = document.querySelector(".user-note-close");
-const noteTabs = document.querySelectorAll(".user-note-tab");
-const noteHold = document.querySelector(".user-note-flip-hold");
-const noteFlips = document.querySelectorAll(".user-note-flip-page");
+const noteTabList = document.querySelector(".user-note-tabs");
+let noteTabs = [];
+const noteFlipRoot = document.querySelector(".user-note-flip-pages");
+const noteHold = noteFlipRoot.querySelector(".user-note-flip-hold");
+const noteFlipSample = noteFlipRoot.querySelector(".user-note-flip-page");
+const NOTE_FLIP_COUNT = 4;
+while (noteFlipRoot.querySelectorAll(".user-note-flip-page").length < NOTE_FLIP_COUNT) {
+    noteFlipRoot.append(noteFlipSample.cloneNode(true));
+}
+const noteFlips = noteFlipRoot.querySelectorAll(".user-note-flip-page");
 const noteCover = document.querySelector(".user-note-cover");
 const noteOpen = document.querySelector(".user-note-open");
 const notePencil = document.querySelector(".user-note-pencil");
 const noteGuide = document.querySelector(".user-note-guide");
-const remote = document.querySelector(".remote");
-const wheelHint = document.querySelector(".wheel-hint");
-const remoteNext = document.querySelector(".remote-next");
 
+// ===== 섹션 6 =====
+const section06 = document.querySelector(".section06");
+const songVinyl = document.querySelector(".song-vinyl");
+const songSleeve = document.querySelector(".song-sleeve");
+const songVinylLabel = document.querySelector(".song-vinyl-label");
+const songSleeveName = document.querySelector(".song-sleeve-copy b");
+const songSleeveCount = document.querySelector(".song-sleeve-copy span");
+const songRoot = document.querySelector(".song");
+const songHead = document.querySelector(".song-head");
+const songBody = document.querySelector(".song-body");
+const songSide = document.querySelector(".song-side");
+const songMain = document.querySelector(".song-main");
+const songFoot = [...document.querySelectorAll(".song-notes, .song-actions")];
+const songIntroNotes = [...document.querySelectorAll(".song-intro-note")];
+
+// ===== 인트로 · 노이즈 =====
 const noiseCanvas = document.querySelector(".noise");
 const fullNoiseCanvas = document.querySelector(".full-noise-canvas");
 const noiseCtx = noiseCanvas.getContext("2d", { alpha: false });
@@ -126,6 +176,33 @@ let section03Tl = null;
 let onSection04 = false;
 let section04Tl = null;
 let onSection05 = false;
+let onSection06 = false;
+let section06Tl = null;
+// section06 단계: 0 음표, 1 가운데 제목, 2 큰 비율, 3 레코드
+let section06Step = 0;
+let songIndex = 0;
+let songOut = false;
+// 섹션 6. 동요 주제는 여기서만 만든다
+const songs = [
+    { name: "세계 유명 동요", count: 131, image: "./images/song-thumb1.png" },
+    { name: "율동 동요", count: 13, image: "./images/song-thumb2.png" },
+    { name: "리틀팍스 동화 주제가", label: "리틀팍스<br>동화 주제가", count: 16, image: "./images/song-thumb3.png" },
+    { name: "파닉스 송", count: 53, image: "./images/song-thumb4.png" },
+    { name: "기초 학습", count: 37, image: "./images/song-thumb5.png" },
+    { name: "사이트 워드 송", count: 20, image: "./images/song-thumb6.png" },
+    { name: "생활 영어", count: 72, image: "./images/song-thumb7.png" },
+    { name: "자장가", count: 16, image: "./images/song-thumb8.png" },
+    { name: "크리스마스 & 핼러윈", label: "크리스마스<br>& 핼러윈", count: 34, image: "./images/song-thumb9.png" }
+];
+const songTopics = document.querySelector(".song-topics");
+songTopics.innerHTML = songs.map((song, index) => `
+    <button type="button" class="song-topic${index ? "" : " is-active"}" aria-pressed="${index ? "false" : "true"}">
+        <img src="${song.image}" alt="">
+        <span>${song.label || song.name}</span>
+        <b>${song.count}곡</b>
+    </button>
+`).join("");
+const songTopicButtons = [...songTopics.children];
 let section05Tl = null;
 let section05Step = 0;
 let noteTl = null;
@@ -149,7 +226,7 @@ Promise.all(channelSources.map(src => new Promise(resolve => {
 });
 
 
-// ---------- noise ----------
+// ===== 인트로 · 노이즈 그리기 =====
 
 function resizeNoise() {
     noiseCanvas.width = 420;
@@ -209,7 +286,7 @@ function stopNoise() {
 }
 
 
-// ---------- reset ----------
+// ===== 인트로 · 처음 상태 =====
 
 function resetIntro() {
     if (timeline) {
@@ -314,6 +391,15 @@ function resetIntro() {
     gsap.set(section05, { opacity: 0, visibility: "hidden" });
     resetSection05();
 
+    onSection06 = false;
+    if (section06Tl) {
+        section06Tl.kill();
+        section06Tl = null;
+    }
+    gsap.killTweensOf([section06, songVinyl, songHead, songBody, songSide, songMain, ...songFoot, ...songIntroNotes]);
+    gsap.set(section06, { opacity: 0, visibility: "hidden", y: 0, clipPath: "none" });
+    resetSongStage();
+
     gsap.set(fullscreenNoise, {
         display: "none",
         visibility: "hidden",
@@ -380,7 +466,7 @@ function floatRemote() {
 }
 
 
-// ---------- signal ----------
+// ===== 인트로 · 채널 신호 =====
 
 // 흔들리며 몇 번 비쳤다 끊긴 뒤 제자리에 잡힘
 function addSignalLock(tl) {
@@ -553,7 +639,7 @@ function showChannelNumber(index) {
 }
 
 
-// ---------- channel ----------
+// ===== 인트로 · TV를 화면에 맞추기 =====
 
 // TV가 화면을 꽉 채우도록 키울 배율. 지금 방 화면(scale 1)에서 재야 함
 function tvFillPose() {
@@ -620,6 +706,7 @@ function logoTopPose() {
     };
 }
 
+// ===== 섹션 1 =====
 function enterSection01() {
     onSection01 = true;
     switching = true;
@@ -766,83 +853,26 @@ function hideListening() {
         .to(sectionKorea, { y: centerY, scale: 1, duration: .8, ease: "power3.inOut" }, "<");
 }
 
-function showReading() {
-    sectionStep = 4;
+// 섹션 1 단계 4~6. 듣기·읽기·말하기·쓰기 중 모드 하나만 켠다
+function moveSkill(step, mode) {
+    sectionStep = step;
     switching = true;
-    const y = stackCenterY(mediaBoxHeight("reading"));
-    sectionListening.classList.add("is-reading");
-
-    section01Tl = gsap.timeline({
-        onComplete: () => { switching = false; }
-    });
-    section01Tl
-        .to(sectionCont, { y, duration: .85, ease: "power3.inOut" });
-}
-
-function hideReading() {
-    sectionStep = 3;
-    switching = true;
-    const y = stackCenterY(mediaBoxHeight("listening"));
     sectionListening.classList.remove("is-reading", "is-speaking", "is-writing");
+    if (mode !== "listening") sectionListening.classList.add("is-" + mode);
+    const y = stackCenterY(mediaBoxHeight(mode));
 
     section01Tl = gsap.timeline({
         onComplete: () => { switching = false; }
     });
-    section01Tl
-        .to(sectionCont, { y, duration: .85, ease: "power3.inOut" });
+    section01Tl.to(sectionCont, { y, duration: .85, ease: "power3.inOut" });
 }
 
-function showSpeaking() {
-    sectionStep = 5;
-    switching = true;
-    const y = stackCenterY(mediaBoxHeight("speaking"));
-    sectionListening.classList.add("is-speaking");
-
-    section01Tl = gsap.timeline({
-        onComplete: () => { switching = false; }
-    });
-    section01Tl
-        .to(sectionCont, { y, duration: .85, ease: "power3.inOut" });
-}
-
-function hideSpeaking() {
-    sectionStep = 4;
-    switching = true;
-    const y = stackCenterY(mediaBoxHeight("reading"));
-    sectionListening.classList.remove("is-speaking");
-
-    section01Tl = gsap.timeline({
-        onComplete: () => { switching = false; }
-    });
-    section01Tl
-        .to(sectionCont, { y, duration: .85, ease: "power3.inOut" });
-}
-
-function showWriting() {
-    sectionStep = 6;
-    switching = true;
-    const y = stackCenterY(mediaBoxHeight("writing"));
-    sectionListening.classList.add("is-writing");
-
-    section01Tl = gsap.timeline({
-        onComplete: () => { switching = false; }
-    });
-    section01Tl
-        .to(sectionCont, { y, duration: .85, ease: "power3.inOut" });
-}
-
-function hideWriting() {
-    sectionStep = 5;
-    switching = true;
-    const y = stackCenterY(mediaBoxHeight("speaking"));
-    sectionListening.classList.remove("is-writing");
-
-    section01Tl = gsap.timeline({
-        onComplete: () => { switching = false; }
-    });
-    section01Tl
-        .to(sectionCont, { y, duration: .85, ease: "power3.inOut" });
-}
+function showReading() { moveSkill(4, "reading"); }
+function hideReading() { moveSkill(3, "listening"); }
+function showSpeaking() { moveSkill(5, "speaking"); }
+function hideSpeaking() { moveSkill(4, "reading"); }
+function showWriting() { moveSkill(6, "writing"); }
+function hideWriting() { moveSkill(5, "speaking"); }
 
 function showYear() {
     sectionStep = 7;
@@ -914,6 +944,7 @@ function hideYearCount() {
         }, "<");
 }
 
+// ===== 섹션 2 =====
 // 작은 제목 자리에서 화면 가운데로 키울 때. 왼쪽 가운데를 기준으로 커진다
 function philosophyTitleCenter() {
     const w = philosophyTitle.offsetWidth;
@@ -1012,67 +1043,34 @@ function stageOffscreenX() {
     return window.innerWidth - philosophyStage.parentElement.getBoundingClientRect().left;
 }
 
-function showPhilosophyEarly() {
-    section02Step = 2;
+// 섹션 2 단계 2·3. 다음 묶음이 오른쪽에서 들어와 앞 묶음을 덮는다
+function slidePhilosophyStage(step, incoming, covered, forward) {
+    section02Step = step;
     switching = true;
-
-    if (section02Tl) section02Tl.kill();
-    section02Tl = gsap.timeline({
-        onComplete: () => { switching = false; }
-    });
-    section02Tl
-        .fromTo(philosophyEarly,
-            { opacity: 1, x: stageOffscreenX(), y: 0 },
-            { x: 0, duration: 1, ease: "power3.inOut" })
-        .to(philosophyStage, { scale: .96, opacity: .5, duration: 1, ease: "power3.inOut" }, "<");
-}
-
-function hidePhilosophyEarly() {
-    section02Step = 1;
-    switching = true;
-
     if (section02Tl) section02Tl.kill();
     section02Tl = gsap.timeline({
         onComplete: () => {
-            gsap.set(philosophyEarly, { opacity: 0, x: 0, y: 0 });
+            if (!forward) gsap.set(incoming, { opacity: 0, x: 0, y: 0 });
             switching = false;
         }
     });
+    if (forward) {
+        section02Tl
+            .fromTo(incoming,
+                { opacity: 1, x: stageOffscreenX(), y: 0 },
+                { x: 0, duration: 1, ease: "power3.inOut" })
+            .to(covered, { scale: .96, opacity: .5, duration: 1, ease: "power3.inOut" }, "<");
+        return;
+    }
     section02Tl
-        .to(philosophyEarly, { x: stageOffscreenX(), duration: .9, ease: "power3.inOut" })
-        .to(philosophyStage, { scale: 1, opacity: 1, duration: .9, ease: "power3.inOut" }, "<");
+        .to(incoming, { x: stageOffscreenX(), duration: .9, ease: "power3.inOut" })
+        .to(covered, { scale: 1, opacity: 1, duration: .9, ease: "power3.inOut" }, "<");
 }
 
-function showPhilosophyFun() {
-    section02Step = 3;
-    switching = true;
-
-    if (section02Tl) section02Tl.kill();
-    section02Tl = gsap.timeline({
-        onComplete: () => { switching = false; }
-    });
-    section02Tl
-        .fromTo(philosophyFun,
-            { opacity: 1, x: stageOffscreenX(), y: 0 },
-            { x: 0, duration: 1, ease: "power3.inOut" })
-        .to(philosophyEarly, { scale: .96, opacity: .5, duration: 1, ease: "power3.inOut" }, "<");
-}
-
-function hidePhilosophyFun() {
-    section02Step = 2;
-    switching = true;
-
-    if (section02Tl) section02Tl.kill();
-    section02Tl = gsap.timeline({
-        onComplete: () => {
-            gsap.set(philosophyFun, { opacity: 0, x: 0, y: 0 });
-            switching = false;
-        }
-    });
-    section02Tl
-        .to(philosophyFun, { x: stageOffscreenX(), duration: .9, ease: "power3.inOut" })
-        .to(philosophyEarly, { scale: 1, opacity: 1, duration: .9, ease: "power3.inOut" }, "<");
-}
+function showPhilosophyEarly() { slidePhilosophyStage(2, philosophyEarly, philosophyStage, true); }
+function hidePhilosophyEarly() { slidePhilosophyStage(1, philosophyEarly, philosophyStage, false); }
+function showPhilosophyFun() { slidePhilosophyStage(3, philosophyFun, philosophyEarly, true); }
+function hidePhilosophyFun() { slidePhilosophyStage(2, philosophyFun, philosophyEarly, false); }
 
 function leaveSection01() {
     onSection01 = false;
@@ -1100,6 +1098,8 @@ function leaveSection01() {
         .to(wheelHint, { x: 0, y: 0, scale: 1, force3D: false, duration: 1.15, ease: "power3.inOut" }, "<");
 }
 
+// ===== 섹션 3 =====
+// 말풍선 자리는 여기만 둔다
 const storySpots = {
     meet: { left: "2.5%", top: "43.7%", scale: 1 },
     read: { left: "6.4%", top: "10.3%", scale: 1.28 },
@@ -1291,7 +1291,7 @@ section03.addEventListener("pointermove", event => {
 section03.addEventListener("pointerleave", () => { storyPointer.active = false; });
 
 
-// ---------- section04 ----------
+// ===== 섹션 4 =====
 
 // 문단은 배열, { mark }는 형광펜. image는 왼쪽 원 안에 들어갈 그림
 const userNotes = [
@@ -1360,6 +1360,16 @@ const userNotes = [
     }
 ];
 
+noteTabs = userNotes.map((_, index) => {
+    const tab = document.createElement("button");
+    tab.type = "button";
+    tab.className = "user-note-tab" + (index ? "" : " is-active");
+    tab.setAttribute("role", "tab");
+    tab.setAttribute("aria-selected", index ? "false" : "true");
+    tab.textContent = String(index + 1).padStart(2, "0");
+    return tab;
+});
+noteTabList.replaceChildren(...noteTabs);
 noteTotal.textContent = String(userNotes.length).padStart(2, "0");
 
 function renderNote(index) {
@@ -1557,6 +1567,7 @@ function goNote(target) {
     addFlips(noteTl, count, dir, 0, .12, .75);
 }
 
+// ===== 섹션 3 · 들어오고 나가기 =====
 function enterSection03() {
     onSection03 = true;
     onSection02 = false;
@@ -1628,6 +1639,7 @@ function leaveSection04() {
     section04Tl.to(section04, { y: "100vh", duration: .9, ease: "power3.inOut" });
 }
 
+// ===== 섹션 5 =====
 // featured.jpg 원본 184x123 비율 그대로 둬야 잘리지 않는다
 const SECTION05_RATIO = 184 / 123;
 const section05Ids = [
@@ -2154,6 +2166,18 @@ const section05TopicData = [
     ] }
 ];
 
+// 주제 버튼·편수·작품 제목은 section05TopicData만 쓴다
+section05Topics.querySelector(".section05-topics-chips").replaceChildren(...section05TopicData.map((topic, index) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = topic.name;
+    if (!index) button.classList.add("is-active");
+    button.setAttribute("aria-pressed", index ? "false" : "true");
+    return button;
+}));
+section05TopicButtons = [...section05Topics.querySelectorAll(".section05-topics-chips button")];
+setSection05Topic(0);
+
 function section05VisibleStories() {
     const stories = section05TopicData[section05TopicIndex].stories;
     return section05TopicLabels.map((_, labelIndex) => stories[(section05TopicOffset + labelIndex) % stories.length]);
@@ -2389,6 +2413,286 @@ function leaveSection05() {
     section05Tl.to(section05, { opacity: 0, duration: .6, ease: "power2.inOut" });
 }
 
+// ===== 섹션 6 =====
+function songSlideX() {
+    return songVinyl.offsetWidth * .72;
+}
+
+function showSong(index) {
+    const song = songs[index];
+    songIndex = index;
+    songVinylLabel.src = song.image;
+    songSleeveName.textContent = song.name;
+    songSleeveCount.textContent = `${song.count}곡`;
+    songTopicButtons.forEach((button, buttonIndex) => {
+        const active = buttonIndex === index;
+        button.classList.toggle("is-active", active);
+        button.setAttribute("aria-pressed", active ? "true" : "false");
+    });
+}
+
+function ejectSong() {
+    songOut = true;
+    songVinyl.classList.add("is-out");
+    gsap.to(songVinyl, { x: songSlideX(), duration: .85, ease: "power3.out", overwrite: "auto" });
+}
+
+function tuckSong() {
+    songOut = false;
+    songVinyl.classList.remove("is-out");
+    gsap.to(songVinyl, { x: 0, duration: .7, ease: "power3.inOut", overwrite: "auto" });
+}
+
+function resetSongPlayer() {
+    songIndex = 0;
+    songOut = false;
+    gsap.killTweensOf(songVinyl);
+    gsap.set(songVinyl, { x: 0 });
+    songVinyl.classList.remove("is-out");
+    showSong(0);
+}
+
+function chooseSong(index) {
+    const same = index === songIndex;
+    showSong(index);
+    if (same && songOut) tuckSong();
+    else if (songOut) gsap.fromTo(songVinyl, { x: songSlideX() * .82 }, { x: songSlideX(), duration: .45, ease: "power2.out", overwrite: "auto" });
+    else ejectSong();
+}
+
+function playSongNotes() {
+    songIntroNotes.forEach(note => note.classList.add("is-dancing"));
+}
+
+function stopSongNotes() {
+    songIntroNotes.forEach(note => note.classList.remove("is-dancing"));
+}
+
+function songHeadShift(from, to) {
+    return {
+        x: (from.left + from.width / 2) - (to.left + to.width / 2),
+        y: (from.top + from.height / 2) - (to.top + to.height / 2),
+        scale: from.width / to.width
+    };
+}
+
+function resetSongStage() {
+    section06Step = 0;
+    section06.classList.remove("is-title", "is-ratio", "is-layout");
+    songRoot.setAttribute("aria-hidden", "true");
+    stopSongNotes();
+    gsap.killTweensOf([songHead, songBody, songSide, songMain, ...songFoot, ...songIntroNotes]);
+    gsap.set(songIntroNotes, { opacity: 0, scale: .25, y: 80 });
+    gsap.set(songHead, { opacity: 0, x: 0, y: 0, scale: 1, xPercent: 0, yPercent: 0 });
+    gsap.set(songBody, { opacity: 0, clearProps: "transform" });
+    gsap.set(songSide, { opacity: 1, scale: 1, x: 0, y: 0, xPercent: 0, yPercent: 0 });
+    gsap.set([songMain, ...songFoot], { opacity: 1, y: 0 });
+    resetSongPlayer();
+}
+
+function songCircleClip() {
+    const radius = Math.ceil(Math.hypot(window.innerWidth, window.innerHeight) / 2) + 8;
+    return {
+        closed: "circle(0px at 50% 50%)",
+        open: `circle(${radius}px at 50% 50%)`
+    };
+}
+
+function enterSection06() {
+    onSection06 = true;
+    onSection05 = false;
+    switching = true;
+    if (section06Tl) section06Tl.kill();
+    resetSongStage();
+    const clip = songCircleClip();
+    gsap.set(section06, { visibility: "visible", opacity: 1, y: 0, clipPath: clip.closed });
+    playSongNotes();
+
+    section06Tl = gsap.timeline({
+        onComplete: () => {
+            gsap.set(section06, { clipPath: "none" });
+            switching = false;
+        }
+    });
+    section06Tl.to(section06, { clipPath: clip.open, duration: 1.05, ease: "power3.inOut" }, 0);
+    section06Tl.fromTo(songIntroNotes,
+        { opacity: 0, scale: .15, y: 90 },
+        { opacity: 1, scale: 1, y: 0, duration: .9, ease: "back.out(1.6)", stagger: .12 },
+        .32);
+}
+
+function showSongTitle() {
+    if (section06Step !== 0 || switching) return;
+    section06Step = 1;
+    switching = true;
+    if (section06Tl) section06Tl.kill();
+
+    section06.classList.add("is-title");
+    gsap.set(songHead, { xPercent: -50, yPercent: -50, x: 0, y: 36, scale: .82, opacity: 0 });
+
+    section06Tl = gsap.timeline({
+        onComplete: () => { switching = false; }
+    });
+    section06Tl.to(songIntroNotes, {
+        opacity: 0,
+        scale: .45,
+        y: -40,
+        duration: .42,
+        ease: "power2.in",
+        stagger: .05
+    }, 0);
+    section06Tl.add(stopSongNotes, .42);
+    section06Tl.to(songHead, {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        duration: .75,
+        ease: "power3.out"
+    }, .24);
+}
+
+function hideSongTitle() {
+    if (section06Step !== 1 || switching) return;
+    switching = true;
+    if (section06Tl) section06Tl.kill();
+    playSongNotes();
+
+    section06Tl = gsap.timeline({
+        onComplete: () => {
+            section06.classList.remove("is-title");
+            gsap.set(songHead, { opacity: 0, x: 0, y: 0, scale: 1, xPercent: 0, yPercent: 0 });
+            section06Step = 0;
+            switching = false;
+        }
+    });
+    section06Tl.to(songHead, { opacity: 0, y: 28, scale: .84, duration: .32, ease: "power2.in" }, 0);
+    section06Tl.fromTo(songIntroNotes,
+        { opacity: 0, scale: .35, y: 50 },
+        { opacity: 1, scale: 1, y: 0, duration: .7, ease: "back.out(1.6)", stagger: .08 },
+        .12);
+}
+
+function placeSongHead(from) {
+    gsap.set(songHead, { x: 0, y: 0, scale: 1, xPercent: 0, yPercent: 0, opacity: 1 });
+    const shift = songHeadShift(from, songHead.getBoundingClientRect());
+    gsap.set(songHead, { ...shift, transformOrigin: "50% 50%" });
+}
+
+function showSongRatio() {
+    if (section06Step !== 1 || switching) return;
+    section06Step = 2;
+    switching = true;
+    if (section06Tl) section06Tl.kill();
+
+    const from = songHead.getBoundingClientRect();
+    section06.classList.remove("is-title");
+    section06.classList.add("is-ratio");
+    gsap.set(songBody, { opacity: 1, clearProps: "transform" });
+    gsap.set(songSide, { opacity: 0, yPercent: -50, y: 28, scale: 1, x: 0, xPercent: 0 });
+    placeSongHead(from);
+    songRoot.setAttribute("aria-hidden", "false");
+
+    section06Tl = gsap.timeline({
+        onComplete: () => { switching = false; }
+    });
+    section06Tl.to(songHead, { x: 0, y: 0, scale: 1, duration: .9, ease: "power3.inOut" }, 0);
+    section06Tl.to(songSide, { opacity: 1, y: 0, duration: .65, ease: "power2.out" }, .22);
+}
+
+function hideSongRatio() {
+    if (section06Step !== 2 || switching) return;
+    switching = true;
+    if (section06Tl) section06Tl.kill();
+
+    section06Tl = gsap.timeline({
+        onComplete: () => {
+            songRoot.setAttribute("aria-hidden", "true");
+            section06Step = 1;
+            switching = false;
+        }
+    });
+    section06Tl.to(songSide, { opacity: 0, y: 20, duration: .26, ease: "power2.in" }, 0);
+    section06Tl.add(() => {
+        const from = songHead.getBoundingClientRect();
+        section06.classList.remove("is-ratio");
+        section06.classList.add("is-title");
+        gsap.set(songBody, { opacity: 0, clearProps: "transform" });
+        gsap.set(songSide, { opacity: 1, y: 0 });
+        gsap.set(songHead, { x: 0, y: 0, scale: 1, xPercent: -50, yPercent: -50, opacity: 1 });
+        const shift = songHeadShift(from, songHead.getBoundingClientRect());
+        gsap.set(songHead, { ...shift, transformOrigin: "50% 50%" });
+    }, .22);
+    section06Tl.to(songHead, { x: 0, y: 0, scale: 1, duration: .85, ease: "power3.inOut" }, .24);
+}
+
+function showSongLayout() {
+    if (section06Step !== 2 || switching) return;
+    section06Step = 3;
+    switching = true;
+    if (section06Tl) section06Tl.kill();
+
+    section06Tl = gsap.timeline({
+        onComplete: () => { switching = false; }
+    });
+    section06Tl.to(songSide, { opacity: 0, duration: .28, ease: "power2.in" }, 0);
+    section06Tl.add(() => {
+        section06.classList.remove("is-ratio");
+        section06.classList.add("is-layout");
+        gsap.set(songSide, { opacity: 0 });
+        gsap.set(songMain, { opacity: 0, y: 28 });
+        gsap.set(songFoot, { opacity: 0, y: 18 });
+    }, .22);
+    section06Tl.to(songMain, { opacity: 1, y: 0, duration: .65, ease: "power3.out" }, .24);
+    section06Tl.to(songFoot, { opacity: 1, y: 0, duration: .5, stagger: .07, ease: "power2.out" }, .32);
+}
+
+function hideSongLayout() {
+    if (section06Step !== 3 || switching) return;
+    switching = true;
+    if (section06Tl) section06Tl.kill();
+    if (songOut) {
+        songOut = false;
+        songVinyl.classList.remove("is-out");
+        gsap.set(songVinyl, { x: 0 });
+    }
+
+    section06Tl = gsap.timeline({
+        onComplete: () => {
+            section06Step = 2;
+            switching = false;
+        }
+    });
+    section06Tl.to([songMain, ...songFoot], { opacity: 0, y: 14, duration: .24, ease: "power2.in" }, 0);
+    section06Tl.add(() => {
+        section06.classList.remove("is-layout");
+        section06.classList.add("is-ratio");
+        gsap.set(songMain, { opacity: 1, y: 0 });
+        gsap.set(songFoot, { opacity: 1, y: 0 });
+        gsap.set(songSide, { opacity: 0, yPercent: -50, y: 18 });
+    }, .2);
+    section06Tl.to(songSide, { opacity: 1, y: 0, duration: .55, ease: "power2.out" }, .22);
+}
+
+function leaveSection06() {
+    onSection06 = false;
+    onSection05 = true;
+    switching = true;
+    if (section06Tl) section06Tl.kill();
+
+    const clip = songCircleClip();
+    gsap.set(section06, { y: 0, clipPath: clip.open });
+    section06Tl = gsap.timeline({
+        onComplete: () => {
+            gsap.set(section06, { visibility: "hidden", opacity: 0, y: 0, clipPath: "none" });
+            resetSongStage();
+            switching = false;
+        }
+    });
+    section06Tl.to(songIntroNotes, { opacity: 0, scale: .35, duration: .4, ease: "power2.in" }, 0);
+    section06Tl.to(section06, { clipPath: clip.closed, duration: .9, ease: "power3.inOut" }, 0);
+}
+
+// ===== 공통 · 휠과 채널 =====
 function wheelPixels(event) {
     if (event.deltaMode === 1) return event.deltaY * 32;
     if (event.deltaMode === 2) return event.deltaY * window.innerHeight;
@@ -2412,11 +2716,25 @@ function canInnerScroll(node, delta) {
 function changeChannel(dir) {
     if (!introDone || switching || !storyCard.hidden) return;
 
+    // 섹션 6
+    if (onSection06) {
+        if (dir > 0 && section06Step === 0) showSongTitle();
+        else if (dir > 0 && section06Step === 1) showSongRatio();
+        else if (dir > 0 && section06Step === 2) showSongLayout();
+        else if (dir < 0 && section06Step === 3) hideSongLayout();
+        else if (dir < 0 && section06Step === 2) hideSongRatio();
+        else if (dir < 0 && section06Step === 1) hideSongTitle();
+        else if (dir < 0 && section06Step === 0) leaveSection06();
+        return;
+    }
+
+    // 섹션 5
     if (onSection05) {
         if (dir > 0 && section05Step === 0) showSection05Gallery();
         else if (dir > 0 && section05Step === 1) openSection05Center();
         else if (dir > 0 && section05Step === 2) showSection05Levels();
         else if (dir > 0 && section05Step === 3) showSection05Topics();
+        else if (dir > 0 && section05Step === 4) enterSection06();
         else if (dir < 0 && section05Step === 4) hideSection05Topics();
         else if (dir < 0 && section05Step === 3) hideSection05Levels();
         else if (dir < 0 && section05Step === 2) closeSection05Center();
@@ -2425,18 +2743,21 @@ function changeChannel(dir) {
         return;
     }
 
+    // 섹션 4
     if (onSection04) {
         if (dir < 0) leaveSection04();
         else enterSection05();
         return;
     }
 
+    // 섹션 3
     if (onSection03) {
         if (dir < 0) leaveSection03();
         else enterSection04();
         return;
     }
 
+    // 섹션 2
     if (onSection02) {
         if (dir > 0) {
             if (section02Step === 3) {
@@ -2457,6 +2778,7 @@ function changeChannel(dir) {
         return;
     }
 
+    // 섹션 1
     if (onSection01) {
         if (dir > 0) {
             if (sectionStep === 8) {
@@ -2528,6 +2850,13 @@ function changeChannel(dir) {
         .to(storyImg, { filter: "brightness(1) contrast(1)", duration: .45, ease: "power2.out" }, "<");
 }
 
+songTopicButtons.forEach((button, index) => {
+    button.addEventListener("click", () => chooseSong(index));
+});
+songSleeve.addEventListener("click", () => {
+    if (songOut) tuckSong();
+    else ejectSong();
+});
 remoteNext.addEventListener("click", () => changeChannel(1));
 storyBubbles.forEach(bubble => bubble.addEventListener("click", () => openStory(bubble)));
 storyClose.addEventListener("click", () => closeStory(true));
@@ -2575,7 +2904,7 @@ window.addEventListener("keydown", e => {
 });
 
 
-// ---------- intro ----------
+// ===== 인트로 · 재생 =====
 
 function playIntro() {
     resetIntro();
