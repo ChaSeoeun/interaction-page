@@ -5,9 +5,19 @@
     --font: "Pretendard", "Malgun Gothic", sans-serif;
 }
 
-/* 커서 이미지는 128px 넘으면 무시됨. 12 2 = 클릭 지점(왼쪽 귀 끝) */
+/* 48px 커서. 12 2 = 클릭 지점(왼쪽 귀 끝). 여기를 벗어나면 누른 자리가 어긋난다 */
 html, body, button, a {
-    cursor: url("./images/cursor-custom-48.png") 12 2, auto;
+    cursor: url("./images/cursor-custom-48.png?v=3") 12 2, auto;
+}
+
+a[href]:hover,
+button:not(:disabled):hover,
+[role="button"]:not([aria-disabled="true"]):hover,
+summary:hover,
+label:hover,
+select:not(:disabled):hover,
+.story-dim:hover {
+    cursor: url("./images/cursor-custom-hover-48.png?v=3") 12 2, auto;
 }
 
 html {
@@ -2542,5 +2552,112 @@ html, body {
     0%, 100% { transform: translate(0, 0) rotate(11deg); }
     34% { transform: translate(.8vw, -4.8vh) rotate(-16deg); }
     68% { transform: translate(-1.1vw, 1.2vh) rotate(8deg); }
+}
+
+/* 왼쪽 중앙 · 섹션 이동. 평소엔 점과 선만, 올리면 말풍선 */
+.section-rail {
+    position: fixed;
+    left: max(18px, 1.3vw);
+    top: 50%;
+    z-index: 130;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin: 0;
+    padding: 0;
+    transform: translateY(-50%);
+}
+
+.section-rail[hidden] {
+    display: none;
+}
+
+.section-rail::before {
+    content: "";
+    position: absolute;
+    left: 13px;
+    top: 18px;
+    bottom: 18px;
+    z-index: 0;
+    width: 2px;
+    border-radius: 1px;
+    background: #d5d5d5;
+    pointer-events: none;
+}
+
+.section-rail button {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 36px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--point);
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: -.04em;
+    line-height: 1;
+}
+
+.section-rail button span {
+    width: 18px;
+    height: 18px;
+    box-sizing: border-box;
+    border: 3px solid #fff;
+    border-radius: 50%;
+    background: #c5c5c5;
+}
+
+.section-rail button.is-active span {
+    background: #ff4d66;
+}
+
+.section-rail button em {
+    position: absolute;
+    left: 36px;
+    top: 50%;
+    z-index: 2;
+    display: block;
+    padding: 8px 12px;
+    border-radius: 12px;
+    background: #fff;
+    color: #ff4d66;
+    font-style: normal;
+    white-space: nowrap;
+    opacity: 0;
+    transform: translateY(-50%) translateX(-4px);
+    pointer-events: none;
+    filter: drop-shadow(0 5px 10px rgba(60, 40, 30, .14));
+    transition: opacity .16s ease, transform .16s ease;
+}
+
+.section-rail button em::before {
+    content: "";
+    position: absolute;
+    left: -4px;
+    top: 50%;
+    width: 9px;
+    height: 9px;
+    border-radius: 2px;
+    background: #fff;
+    transform: translateY(-50%) rotate(45deg);
+}
+
+.section-rail button:hover em,
+.section-rail button:focus-visible em {
+    opacity: 1;
+    transform: translateY(-50%) translateX(0);
+}
+
+.section-rail button:focus-visible {
+    outline: none;
+}
+
+.section-rail button:focus-visible span {
+    box-shadow: 0 0 0 3px #fff, 0 0 0 5px rgba(255, 77, 102, .35);
 }
 

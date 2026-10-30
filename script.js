@@ -441,6 +441,7 @@ function resetIntro() {
     gsap.set(powerFlash, { scaleY: 0, opacity: 0 });
 
     floatRemote();
+    syncSectionRail();
 }
 
 function setRemoteVisible(visible) {
@@ -2850,6 +2851,246 @@ function changeChannel(dir) {
         .to(storyImg, { filter: "brightness(1) contrast(1)", duration: .45, ease: "power2.out" }, "<");
 }
 
+// ===== 왼쪽 탭 · 섹션 시작 화면으로 =====
+const sectionRail = document.querySelector(".section-rail");
+const sectionRailButtons = [...sectionRail.querySelectorAll("button")];
+const sectionRank = { intro: 0, "01": 1, "02": 2, "03": 3, "04": 4, "05": 5, "06": 6 };
+
+function currentSectionKey() {
+    if (onSection06) return "06";
+    if (onSection05) return "05";
+    if (onSection04) return "04";
+    if (onSection03) return "03";
+    if (onSection02) return "02";
+    if (onSection01) return "01";
+    return "intro";
+}
+
+function syncSectionRail() {
+    const key = introDone ? currentSectionKey() : "";
+    sectionRail.hidden = !introDone;
+    sectionRailButtons.forEach(button => {
+        const on = button.dataset.section === key;
+        button.classList.toggle("is-active", on);
+        if (on) button.setAttribute("aria-current", "true");
+        else button.removeAttribute("aria-current");
+    });
+}
+
+function restingOn(key) {
+    if (currentSectionKey() !== key) return false;
+    if (key === "01") return sectionStep === 1;
+    if (key === "02") return section02Step === 0;
+    if (key === "03") return storyCard.hidden;
+    if (key === "04") return noteBook.dataset.state === "closed";
+    if (key === "05") return section05Step === 0;
+    if (key === "06") return section06Step === 0;
+    return true;
+}
+
+function releaseMotion() {
+    [timeline, channelTl, section01Tl, section02Tl, section03Tl, section04Tl, section05Tl, section06Tl, noteTl].forEach(tl => {
+        if (tl) tl.kill();
+    });
+    timeline = null;
+    channelTl = null;
+    section01Tl = null;
+    section02Tl = null;
+    section03Tl = null;
+    section04Tl = null;
+    section05Tl = null;
+    section06Tl = null;
+    noteTl = null;
+
+    gsap.killTweensOf([
+        scene, roomBg, story, storyImg, noiseCanvas, scanline, rgbTint, wheelHint, remote,
+        libraryLogo, libraryClass, libraryDesc, librarySlot, ...libraryCopy,
+        section01, ...sectionCopy, sectionKorea, sectionListening, sectionCont, yearInner, yearNum, yearCopy,
+        section02, philosophy, philosophyWheel, philosophyTitle, philosophyStage, philosophyEarly, philosophyFun,
+        section03, storiesStage, ...storyBubbles,
+        section04,
+        section05, section05Copy, section05Hint, section05Chart, section05Levels, section05Topics, ...section05TopicReveals, ...section05Thumbs,
+        section06, songVinyl, songHead, songBody, songSide, songMain, ...songFoot, ...songIntroNotes
+    ]);
+
+    [...gsap.globalTimeline.getChildren(false, true, true)].forEach(tween => {
+        const targets = tween.targets ? tween.targets() : [];
+        if (!targets.some(target => target instanceof Element)) tween.kill();
+    });
+}
+
+function holdRemote() {
+    gsap.killTweensOf(remote);
+    gsap.set(remote, { xPercent: -50, y: 0, rotation: -6, opacity: 0 });
+    remoteNext.style.pointerEvents = "none";
+    gsap.to(remote, {
+        y: 16,
+        rotation: 6,
+        duration: .85,
+        ease: "sine.inOut",
+        yoyo: true,
+        repeat: -1
+    });
+}
+
+function resetSection01Frame() {
+    sectionStep = 0;
+    sectionListening.classList.remove("is-reading", "is-speaking", "is-writing");
+    gsap.set(sectionCopy, { opacity: 0, y: 20 });
+    gsap.set([sectionKorea, sectionListening], { opacity: 0, y: 0, scale: 1 });
+    gsap.set(sectionCont, { y: 0, opacity: 1 });
+    gsap.set(yearInner, { y: 0 });
+    gsap.set(yearNum, { opacity: 0, scale: 1 });
+    gsap.set(yearCopy, { opacity: 0, y: 0 });
+    yearNum.textContent = "2000";
+}
+
+function showIntroFrame() {
+    gsap.set(scene, { display: "block", visibility: "visible", scale: 1, x: 0, y: 0 });
+    gsap.set(roomBg, { opacity: 1 });
+    gsap.set(story, { opacity: 1 });
+    gsap.set(storyImg, { opacity: 1, scaleX: 1, scaleY: 1, filter: "none" });
+    if (!channels.includes(libraryChannel)) channels.push(libraryChannel);
+    currentChannel = channels.indexOf(libraryChannel);
+    storyImg.src = libraryChannel;
+    gsap.set(noiseCanvas, { opacity: 1 });
+    gsap.set(scanline, { opacity: .07 });
+    gsap.set(rgbTint, { opacity: .04 });
+    gsap.set([libraryCopy, librarySlot], { opacity: 0 });
+    gsap.set(librarySlot, { x: 0, y: 0, scale: 1 });
+    gsap.set(libraryDesc, { "--dim": 1 });
+    gsap.set(libraryLogo, { ...logoPose(), opacity: 1, force3D: false });
+    gsap.set(libraryClass, { opacity: 1 });
+    libraryStep = 3;
+    gsap.set(wheelHint, { opacity: .85, x: 0, y: 0, scale: 1, transformOrigin: "50% 50%" });
+    gsap.set(section01, { opacity: 0, visibility: "hidden" });
+    resetSection01Frame();
+}
+
+function showSection01Frame() {
+    gsap.set(scene, { display: "block", visibility: "visible", scale: 1, x: 0, y: 0 });
+    gsap.set(libraryLogo, { x: 0, y: 0, scale: 1, opacity: 1 });
+    gsap.set(wheelHint, { x: 0, y: 0, scale: 1, transformOrigin: "50% 50%" });
+    resetSection01Frame();
+    logoBeforeSection = logoPose();
+    const pose = tvFillPose();
+    const logo = logoCenterPose();
+    const hint = wheelFillPose(pose);
+
+    gsap.set(scene, { transformOrigin: pose.origin, scale: pose.scale, x: pose.x, y: pose.y });
+    gsap.set(roomBg, { opacity: 0 });
+    gsap.set(story, { opacity: 0 });
+    gsap.set([noiseCanvas, scanline, rgbTint, libraryClass, ...libraryCopy, librarySlot], { opacity: 0 });
+    gsap.set(librarySlot, { x: 0, y: 0, scale: 1 });
+    gsap.set(libraryDesc, { "--dim": 0 });
+    gsap.set(libraryLogo, { ...logo, opacity: 1, force3D: false });
+    gsap.set(wheelHint, { ...hint, opacity: .85, force3D: false });
+    gsap.set(section01, { visibility: "visible", opacity: 1 });
+    libraryStep = 3;
+
+    if (libraryLogo.getBoundingClientRect().height) {
+        logoBigPose = { x: logo.x, y: logo.y, scale: logo.scale };
+        gsap.set(libraryLogo, { ...logoTopPose(), opacity: 1, force3D: false });
+        gsap.set(sectionCopy, { opacity: 1, y: 0 });
+        sectionStep = 1;
+    }
+}
+
+function parkSection02(visible) {
+    section02Step = 0;
+    gsap.set(philosophyTitle, { x: 0, y: 0, scale: 1, opacity: 1 });
+    gsap.set(philosophyStage, { opacity: 0, x: 0, y: 0, scale: 1 });
+    gsap.set([philosophyEarly, philosophyFun], { opacity: 0, x: 0, y: 0, scale: 1 });
+    if (!visible) {
+        gsap.set(section02, { opacity: 0, visibility: "hidden" });
+        gsap.set(philosophyWheel, { opacity: 0, visibility: "hidden" });
+        return;
+    }
+    gsap.set(section02, { visibility: "visible", opacity: 1 });
+    gsap.set(philosophyTitle, { ...philosophyTitleCenter(), opacity: 1, force3D: false });
+    gsap.set(philosophyWheel, { visibility: "visible", opacity: 1 });
+}
+
+function parkSection03(visible, float) {
+    if (!visible) {
+        setStoryFloat(false);
+        gsap.set(section03, { opacity: 0, visibility: "hidden", y: 0 });
+        return;
+    }
+    closeStory(false);
+    gsap.set(section03, { visibility: "visible", opacity: 1, y: 0 });
+    gsap.set(storiesStage, { scale: 1, opacity: 1 });
+    setStoryFloat(float);
+}
+
+function parkSection04(visible) {
+    resetBook();
+    gsap.set(section04, visible
+        ? { visibility: "visible", opacity: 1, y: 0 }
+        : { visibility: "hidden", opacity: 0, y: 0 });
+}
+
+function parkSection05(visible) {
+    resetSection05();
+    gsap.set(section05, visible
+        ? { visibility: "visible", opacity: 1 }
+        : { visibility: "hidden", opacity: 0 });
+}
+
+function parkSection06(visible) {
+    resetSongStage();
+    if (!visible) {
+        gsap.set(section06, { visibility: "hidden", opacity: 0, y: 0, clipPath: "none" });
+        return;
+    }
+    gsap.set(section06, { visibility: "visible", opacity: 1, y: 0, clipPath: "none" });
+    gsap.set(songIntroNotes, { opacity: 1, scale: 1, y: 0 });
+    playSongNotes();
+}
+
+function jumpToSection(key) {
+    const rank = sectionRank[key];
+    if (!introDone || rank === undefined || restingOn(key)) return;
+
+    releaseMotion();
+    switching = true;
+    stopChannelVideo();
+    setStoryFloat(false);
+    closeStory(false);
+
+    onSection01 = false;
+    onSection02 = false;
+    onSection03 = false;
+    onSection04 = false;
+    onSection05 = false;
+    onSection06 = false;
+
+    if (rank === 0) showIntroFrame();
+    else showSection01Frame();
+    parkSection02(rank >= 2);
+    parkSection03(rank >= 3, rank === 3);
+    parkSection04(rank >= 4);
+    parkSection05(rank >= 5);
+    parkSection06(rank === 6);
+    holdRemote();
+
+    onSection01 = rank >= 1;
+    onSection02 = rank === 2;
+    onSection03 = rank === 3;
+    onSection04 = rank === 4;
+    onSection05 = rank === 5;
+    onSection06 = rank === 6;
+
+    gsap.delayedCall(.45, () => { switching = false; });
+    syncSectionRail();
+}
+
+sectionRail.addEventListener("click", event => {
+    const button = event.target.closest("button");
+    if (!button) return;
+    jumpToSection(button.dataset.section);
+});
+
 songTopicButtons.forEach((button, index) => {
     button.addEventListener("click", () => chooseSong(index));
 });
@@ -2857,7 +3098,10 @@ songSleeve.addEventListener("click", () => {
     if (songOut) tuckSong();
     else ejectSong();
 });
-remoteNext.addEventListener("click", () => changeChannel(1));
+remoteNext.addEventListener("click", () => {
+    changeChannel(1);
+    syncSectionRail();
+});
 storyBubbles.forEach(bubble => bubble.addEventListener("click", () => openStory(bubble)));
 storyClose.addEventListener("click", () => closeStory(true));
 storyDim.addEventListener("click", () => closeStory(true));
@@ -2884,6 +3128,7 @@ window.addEventListener("wheel", e => {
     if (canInnerScroll(e.target, delta)) return;
     if (switching || Math.abs(delta) < 8) return;
     changeChannel(delta > 0 ? 1 : -1);
+    syncSectionRail();
 }, { passive: true });
 
 let touchStartY = null;
@@ -2896,11 +3141,13 @@ window.addEventListener("touchend", e => {
     touchStartY = null;
     if (canInnerScroll(e.target, diff)) return;
     if (Math.abs(diff) > 40) changeChannel(diff > 0 ? 1 : -1);
+    syncSectionRail();
 });
 
 window.addEventListener("keydown", e => {
     if (e.key === "ArrowDown" || e.key === "PageDown") changeChannel(1);
     if (e.key === "ArrowUp" || e.key === "PageUp") changeChannel(-1);
+    syncSectionRail();
 });
 
 
@@ -2956,7 +3203,10 @@ function playIntro() {
     // 방 전체로 줌아웃
     timeline
         .to(scene, { scale: 1, x: 0, y: 0, duration: 1.8, ease: "power3.inOut" })
-        .call(() => { introDone = true; });
+        .call(() => {
+            introDone = true;
+            syncSectionRail();
+        });
 }
 
 
